@@ -3,6 +3,7 @@ package controllers;
 import java.util.Date;
 
 import play.libs.Json;
+import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
 
@@ -23,6 +24,7 @@ public class UserController extends Controller {
 	 * 
 	 * @return
 	 */
+	@BodyParser.Of(play.mvc.BodyParser.Json.class)
 	public Result authenticate() {
 		final JsonNode json = request().body().asJson();
 		if (json == null)
@@ -54,6 +56,7 @@ public class UserController extends Controller {
 	 * 
 	 * @return
 	 */
+	@BodyParser.Of(play.mvc.BodyParser.Json.class)
 	public Result create() {
 		final JsonNode json = request().body().asJson();
 		if (json == null)
