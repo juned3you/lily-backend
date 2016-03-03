@@ -10,6 +10,20 @@ public class Application extends Controller {
     public Result index() {
         return ok(index.render("Your new application is ready."));
     }
+    
+    /*import static akka.pattern.Patterns.ask;
+	import play.libs.Akka;
+	import play.libs.F.Promise;
+	import play.mvc.Controller;
+	import play.mvc.Result;
+	import akka.actor.ActorRef;
+	import akka.actor.ActorSelection;
+	public Promise<Result> index() {
+		ActorRef helloActor = Akka.system().actorOf(FitBitActor.props);
+        return Promise.wrap(ask(helloActor, "hello", 1000))
+                      .map(response -> ok(response.toString()));
+    }*/
+
 
     
     /**
@@ -36,4 +50,6 @@ public class Application extends Controller {
 	public Result preFlight(String all) {
 		return checkPreFlight();
 	}
+	
+	
 }
