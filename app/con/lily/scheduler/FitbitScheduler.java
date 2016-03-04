@@ -23,12 +23,12 @@ public class FitbitScheduler implements Scheduler {
 	@Override
 	public void schedule() {
 		try {
-			ActorRef helloActor = Akka.system().actorOf(FitBitActor.props);
+			ActorRef fitbitActor = Akka.system().actorOf(FitBitActor.props);
 			scheduler = Akka
 					.system()
 					.scheduler()
 					.schedule(Duration.create(0, TimeUnit.MILLISECONDS),
-							Duration.create(30, TimeUnit.MINUTES), helloActor,
+							Duration.create(30, TimeUnit.MINUTES), fitbitActor,
 							"tick", Akka.system().dispatcher(), null);
 		} catch (IllegalStateException e) {
 			Logger.error("Error caused by reloading application", e);
