@@ -13,3 +13,8 @@ GET     /assets/*file               controllers.Assets.versioned(path="/public",
 # User Operations
 POST	/user/create				controllers.UserController.create()
 POST	/user/login					controllers.UserController.authenticate()
+
+#Oauth2 urls
+GET	/oauth/url/:clientName			controllers.AuthorizationController.getAuthorizationUrl(clientName)
+
+GET	/fitbit/oauth/callback			controllers.FitbitController.oauthCallback()

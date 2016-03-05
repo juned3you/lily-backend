@@ -13,5 +13,12 @@ public interface Authorization {
 	 * @return
 	 * @throws AuthorizationException
 	 */
-	public AuthorizationResult authorize() throws AuthorizationException;
+	public AuthorizationResponse authorize(AuthorizationRequest request) throws AuthorizationException;
+	
+	/**
+	 * Get Authorization url for api.
+	 * @return
+	 * @throws AuthorizationException
+	 */
+	public String getAuthorizationUrl() throws AuthorizationException;
 }

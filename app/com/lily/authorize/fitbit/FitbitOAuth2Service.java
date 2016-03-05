@@ -15,6 +15,7 @@ import com.github.scribejava.core.oauth.OAuth20Service;
 
 /**
  * Firbit Auth2 implementation
+ * 
  * @author Mohammad
  *
  */
@@ -32,7 +33,7 @@ public class FitbitOAuth2Service extends OAuth20Service {
 		super(api, config);
 		this.api = api;
 		this.config = config;
-	}
+	}	
 
 	@SuppressWarnings("unchecked")
 	@Override
@@ -79,18 +80,16 @@ public class FitbitOAuth2Service extends OAuth20Service {
 		}
 		return (T) request;
 	}
-	
-	
 
 	/**
-	 * Refresh token. 
+	 * Refresh token.
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
 	protected <T extends AbstractRequest> T createRefreshTokenRequest(
 			String refreshToken, T req) {
 		OAuthRequest request = new OAuthRequest(api.getAccessTokenVerb(),
-				api.getAccessTokenEndpoint(), this);		
+				api.getAccessTokenEndpoint(), this);
 		try {
 			String base64encodedString = "Basic "
 					+ Base64.getEncoder().encodeToString(
@@ -101,11 +100,10 @@ public class FitbitOAuth2Service extends OAuth20Service {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+
 		request.addBodyParameter(OAuthConstants.GRANT_TYPE,
 				OAuthConstants.REFRESH_TOKEN);
-		request.addBodyParameter(OAuthConstants.REFRESH_TOKEN,
-				refreshToken);		
+		request.addBodyParameter(OAuthConstants.REFRESH_TOKEN, refreshToken);
 		return (T) request;
 	}
 
@@ -130,7 +128,7 @@ public class FitbitOAuth2Service extends OAuth20Service {
 		String tokenString = accessToken.getTokenType() + " "
 				+ accessToken.getAccessToken();
 		request.addHeader(AUTHORIZATION, tokenString);
-		//request.addQuerystringParameter(OAuthConstants.ACCESS_TOKEN,
-			//	accessToken.getAccessToken());
+		// request.addQuerystringParameter(OAuthConstants.ACCESS_TOKEN,
+		// accessToken.getAccessToken());
 	}
 }

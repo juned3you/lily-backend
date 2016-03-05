@@ -19,6 +19,22 @@ import javax.persistence.Table;
 @Table(name = "auth_code")
 public class AuthCode {
 
+	public AuthCode() {
+
+	}
+
+	public AuthCode(String authorizationCode, String userId,
+			String redirectUri, String scope, Date createdAt,
+			Integer expiresIn, Client client) {
+		this.authorizationCode = authorizationCode;
+		this.userId = userId;
+		this.redirectUri = redirectUri;
+		this.scope = scope;
+		this.createdAt = createdAt;
+		this.expiresIn = expiresIn;
+		this.client = client;
+	}
+
 	@Id
 	@Column(name = "authorization_code")
 	public String authorizationCode;

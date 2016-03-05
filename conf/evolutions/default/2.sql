@@ -16,10 +16,11 @@ CREATE TABLE client
 
 CREATE TABLE access_token
 (
-  access_token character varying(60) NOT NULL,
-  refresh_token character varying(60),
-  user_id integer NOT NULL,
+  access_token character varying(500) NOT NULL,
+  refresh_token character varying(500),
+  user_id character varying(40) NOT NULL,
   client_id character varying(80) NOT NULL,
+  token_type character varying(20) NOT NULL,
   scope character varying(2000),
   expires_in integer NOT NULL,
   created_at timestamp  NOT NULL,
@@ -29,7 +30,7 @@ CREATE TABLE access_token
 CREATE TABLE auth_code
 (
   authorization_code character varying(40) NOT NULL,
-  user_id integer NOT NULL,
+  user_id character varying(40) NOT NULL,
   redirect_uri character varying(2000),
   created_at timestamp  NOT NULL,
   scope character varying(1000),
@@ -39,6 +40,6 @@ CREATE TABLE auth_code
 );
 
 INSERT INTO client(name, api_key, api_secret, redirect_uri, scope, endpoint, authorization_url, access_token_url, refresh_token_url, created_at)
-VALUES ('fitbit', '227GWC', '12c387e9fb71ff9eb0952356b3190e9f', 'http://localhost:9000', 'activity%20nutrition%20heartrate%20location%20nutrition%20profile%20settings%20sleep%20social%20weight',
+VALUES ('fitbit', '227GWC', '12c387e9fb71ff9eb0952356b3190e9f', 'http://localhost:9000/fitbit/oauth/callback', 'activity%20nutrition%20heartrate%20location%20nutrition%20profile%20settings%20sleep%20social%20weight',
 'https://api.fitbit.com/1', 'https://www.fitbit.com/oauth2/authorize', 'https://api.fitbit.com/oauth2/token', 'https://api.fitbit.com/oauth2/token',
 now());

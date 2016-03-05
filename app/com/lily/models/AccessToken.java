@@ -21,12 +21,13 @@ public class AccessToken{
 	}
 
 	public AccessToken(String accessToken, String refreshToken,
-			String userId, String scope, Date createdAt, Integer expiresIn,
+			String userId, String scope, String tokenType, Date createdAt, Integer expiresIn,
 			Client client) {
 		this.accessToken = accessToken;
 		this.refreshToken = refreshToken;
 		this.userId = userId;
 		this.scope = scope;
+		this.tokenType = tokenType;
 		this.createdAt = createdAt;
 		this.expiresIn = expiresIn;
 		this.client = client;

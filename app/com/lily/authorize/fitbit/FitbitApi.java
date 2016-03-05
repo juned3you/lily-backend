@@ -4,7 +4,6 @@ import java.util.Map;
 
 import play.libs.Json;
 
-import com.avaje.ebean.Ebean;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.github.scribejava.core.builder.api.DefaultApi20;
 import com.github.scribejava.core.exceptions.OAuthException;
@@ -17,7 +16,6 @@ import com.github.scribejava.core.oauth.OAuth20Service;
 import com.github.scribejava.core.utils.OAuthEncoder;
 import com.github.scribejava.core.utils.Preconditions;
 import com.lily.models.Client;
-import com.typesafe.config.ConfigFactory;
 
 /**
  * Fitbit api.

@@ -4,6 +4,7 @@ import java.util.Scanner;
 
 import play.libs.Json;
 
+import com.avaje.ebean.Ebean;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.github.scribejava.core.builder.ServiceBuilder;
 import com.github.scribejava.core.model.OAuth2AccessToken;
@@ -13,25 +14,31 @@ import com.github.scribejava.core.model.Verb;
 import com.github.scribejava.core.model.Verifier;
 import com.github.scribejava.core.oauth.OAuth20Service;
 import com.lily.authorize.fitbit.FitbitApi;
-import com.typesafe.config.Config;
+import com.lily.models.Client;
 import com.typesafe.config.ConfigFactory;
 
 /**
  * Auth test with Scribe java.
+ * 
  * @author root
  *
  */
 public class Test {
 
 	public static void main(String[] str) {
-		Config config = ConfigFactory.load();
+		// Initialize client
+		Client fitbitClient = Ebean
+				.find(Client.class)
+				.where()
+				.eq("name",
+						ConfigFactory.load().getString("fitbit.client.name"))
+				.findUnique();
+
 		// Create OAuth20Service for FitbitApi
 		OAuth20Service service = new ServiceBuilder()
-				.apiKey(config.getString("fitbit.api.client.id"))
-				.apiSecret(config.getString("fitbit.api.client.secret"))
-				.callback(config.getString("fitbit.api.redirect.uri"))
-				.scope(config.getString("fitbit.api.scope"))
-				.build(FitbitApi.instance(null));
+				.apiKey(fitbitClient.apiKey).apiSecret(fitbitClient.apiSecret)
+				.callback(fitbitClient.redirectUri).scope(fitbitClient.scope)
+				.build(FitbitApi.instance(fitbitClient));
 
 		// Obtain the Authorization URL
 		System.out.println("Fetching the Authorization URL...");
