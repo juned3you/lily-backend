@@ -1,10 +1,9 @@
-package com.lily.authorize.fitbit;
+package com.lily.utils;
 
 import java.util.Scanner;
 
 import play.libs.Json;
 
-import com.avaje.ebean.Ebean;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.github.scribejava.core.builder.ServiceBuilder;
 import com.github.scribejava.core.model.OAuth2AccessToken;
@@ -13,38 +12,26 @@ import com.github.scribejava.core.model.Response;
 import com.github.scribejava.core.model.Verb;
 import com.github.scribejava.core.model.Verifier;
 import com.github.scribejava.core.oauth.OAuth20Service;
-import com.lily.authorize.Authorization;
-import com.lily.authorize.AuthorizationResult;
-import com.lily.models.Client;
+import com.lily.authorize.fitbit.FitbitApi;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 
-import con.lily.exception.AuthorizationException;
-
 /**
- * Fitbit authorization steps.
- * 
- * @author Mohammad
+ * Auth test with Scribe java.
+ * @author root
  *
  */
-public class FitbitAuthorizationImpl implements Authorization {
+public class Test {
 
-	@Override
-	public AuthorizationResult authorize() throws AuthorizationException {
-
-		// Initialize client
-		Client fitbitClient = Ebean
-				.find(Client.class)
-				.where()
-				.eq("name",
-						ConfigFactory.load().getString("fitbit.client.name"))
-				.findUnique();
-		
+	public static void main(String[] str) {
+		Config config = ConfigFactory.load();
 		// Create OAuth20Service for FitbitApi
 		OAuth20Service service = new ServiceBuilder()
-				.apiKey(fitbitClient.apiKey).apiSecret(fitbitClient.apiSecret)
-				.callback(fitbitClient.redirectUri).scope(fitbitClient.scope)
-				.build(FitbitApi.instance(fitbitClient));
+				.apiKey(config.getString("fitbit.api.client.id"))
+				.apiSecret(config.getString("fitbit.api.client.secret"))
+				.callback(config.getString("fitbit.api.redirect.uri"))
+				.scope(config.getString("fitbit.api.scope"))
+				.build(FitbitApi.instance(null));
 
 		// Obtain the Authorization URL
 		System.out.println("Fetching the Authorization URL...");
@@ -89,6 +76,5 @@ public class FitbitAuthorizationImpl implements Authorization {
 		System.out.println();
 		System.out
 				.println("Thats it man! Go and build something awesome with Scribe! :)");
-		return null;
 	}
 }

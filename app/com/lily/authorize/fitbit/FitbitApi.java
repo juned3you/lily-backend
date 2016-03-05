@@ -1,11 +1,10 @@
 package com.lily.authorize.fitbit;
 
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import play.libs.Json;
 
+import com.avaje.ebean.Ebean;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.github.scribejava.core.builder.api.DefaultApi20;
 import com.github.scribejava.core.exceptions.OAuthException;
@@ -17,6 +16,7 @@ import com.github.scribejava.core.model.Verb;
 import com.github.scribejava.core.oauth.OAuth20Service;
 import com.github.scribejava.core.utils.OAuthEncoder;
 import com.github.scribejava.core.utils.Preconditions;
+import com.lily.models.Client;
 import com.typesafe.config.ConfigFactory;
 
 /**
@@ -27,6 +27,16 @@ import com.typesafe.config.ConfigFactory;
  */
 public class FitbitApi extends DefaultApi20 {
 
+	private Client fitbitClient = null;
+
+	private FitbitApi(Client fitbitClient) {
+		this.fitbitClient = fitbitClient;		
+	}
+
+	public static final FitbitApi instance(Client fitbitClient) {
+		return new FitbitApi(fitbitClient);
+	}
+
 	private TokenExtractor<OAuth2AccessToken> tokenExtractor = new FitbitTokenExtractor();
 
 	@Override
@@ -36,7 +46,7 @@ public class FitbitApi extends DefaultApi20 {
 
 	@Override
 	public String getAccessTokenEndpoint() {
-		return ConfigFactory.load().getString("fitbit.api.request.token.uri");
+		return fitbitClient.accessTokenUrl;
 	}
 
 	@Override
@@ -53,8 +63,7 @@ public class FitbitApi extends DefaultApi20 {
 	public String getAuthorizationUrl(OAuthConfig config,
 			Map<String, String> arg1) {
 		// Append scope if present
-		String authUrl = ConfigFactory.load().getString(
-				"fitbit.api.authorization.uri");
+		String authUrl = fitbitClient.authorizationUrl;
 		authUrl = authUrl
 				+ "?client_id=%s&response_type=code&redirect_uri=%s&scope=%s";
 
@@ -81,7 +90,7 @@ public class FitbitApi extends DefaultApi20 {
 							"Response body is incorrect. Can't extract a token from an empty string");
 			JsonNode jsResponse = Json.parse(response);
 			JsonNode accesstokenJson = jsResponse.get("access_token");
-
+			System.out.println(response);
 			if (jsResponse != null && accesstokenJson != null) {
 				String accesstoken = OAuthEncoder.decode(accesstokenJson
 						.textValue());
@@ -102,7 +111,5 @@ public class FitbitApi extends DefaultApi20 {
 								+ response + "'", null);
 			}
 		}
-
 	}
-
 }

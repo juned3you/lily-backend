@@ -1,5 +1,3 @@
-# --- !Ups
-
 CREATE DATABASE lily_db;
 
 CREATE TABLE user (
@@ -10,6 +8,4 @@ CREATE TABLE user (
 	password VARCHAR(100),
 	created TIMESTAMP NOT NULL,
 	last_modified TIMESTAMP
-); 
-
-# --- !Downs
+);
