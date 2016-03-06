@@ -88,7 +88,7 @@ public class FitbitApi extends DefaultApi20 {
 							"Response body is incorrect. Can't extract a token from an empty string");
 			JsonNode jsResponse = Json.parse(response);
 			JsonNode accesstokenJson = jsResponse.get("access_token");
-			System.out.println(response);
+			
 			if (jsResponse != null && accesstokenJson != null) {
 				String accesstoken = OAuthEncoder.decode(accesstokenJson
 						.textValue());

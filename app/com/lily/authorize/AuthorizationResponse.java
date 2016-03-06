@@ -9,13 +9,7 @@ import com.github.scribejava.core.model.OAuth2AccessToken;
  *
  */
 public class AuthorizationResponse {
-	public String error = null;
-	public String success = null;
-	public Integer status = null;
+	public String error = null;	
 	public OAuth2AccessToken oauth2accessToken = null;
-
-	@Override
-	public String toString() {
-		return status + ": " +error+ " " + success;
-	}
+	public String userId = null;
 }

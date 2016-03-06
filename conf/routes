@@ -18,3 +18,4 @@ POST	/user/login					controllers.UserController.authenticate()
 GET	/oauth/url/:clientName			controllers.AuthorizationController.getAuthorizationUrl(clientName)
 
 GET	/fitbit/oauth/callback			controllers.FitbitController.oauthCallback()
+GET	/fitbit/user/profile/:userId	controllers.FitbitController.getUserProfile(userId)
