@@ -4,9 +4,8 @@ import play.mvc.Controller;
 import play.mvc.Result;
 
 import com.lily.authorize.Authorization;
+import com.lily.exception.AuthorizationException;
 import com.lily.factory.AuthorizationFactory;
-
-import con.lily.exception.AuthorizationException;
 
 /**
  * Auth methods

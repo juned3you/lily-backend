@@ -46,7 +46,7 @@ public class FitbitOAuth2Service extends OAuth20Service {
 	 */
 	public static Client getFitbitClient() {
 		Client fitbitClient = Ebean.find(Client.class).where()
-				.eq("name", LilyConstants.FITBIT_CLIENT_NAME).findUnique();
+				.eq("name", LilyConstants.Fitbit.CLIENT_NAME).findUnique();
 		return fitbitClient;
 	}
 
@@ -74,7 +74,7 @@ public class FitbitOAuth2Service extends OAuth20Service {
 	 */
 	public static OAuth20Service getFitbitOAuth2ServiceInstance() {
 		Client fitbitClient = Ebean.find(Client.class).where()
-				.eq("name", LilyConstants.FITBIT_CLIENT_NAME).findUnique();
+				.eq("name", LilyConstants.Fitbit.CLIENT_NAME).findUnique();
 		// Create OAuth20Service for FitbitApi
 		OAuth20Service service = new ServiceBuilder()
 				.apiKey(fitbitClient.apiKey).apiSecret(fitbitClient.apiSecret)

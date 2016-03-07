@@ -1,4 +1,4 @@
-package con.lily.exception;
+package com.lily.exception;
 
 /**
  * Authorization exception.

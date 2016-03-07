@@ -2,20 +2,21 @@
 # This file defines all application routes (Higher priority routes first)
 # ~~~~
 
-OPTIONS 	/*all                   controllers.Application.preFlight(all)
+OPTIONS 	/*all                   		controllers.Application.preFlight(all)
 
 # Home page
-GET     /                           controllers.Application.index()
+GET     /                           		controllers.Application.index()
 
 # Map static resources from the /public folder to the /assets URL path
-GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)
+GET     /assets/*file               		controllers.Assets.versioned(path="/public", file: Asset)
 
 # User Operations
-POST	/user/create				controllers.UserController.create()
-POST	/user/login					controllers.UserController.authenticate()
+POST	/user/create						controllers.UserController.create()
+POST	/user/login							controllers.UserController.authenticate()
 
 #Oauth2 urls
-GET	/oauth/url/:clientName			controllers.AuthorizationController.getAuthorizationUrl(clientName)
+GET	/oauth/url/:clientName					controllers.AuthorizationController.getAuthorizationUrl(clientName)
 
-GET	/fitbit/oauth/callback			controllers.FitbitController.oauthCallback()
-GET	/fitbit/user/profile/:userId	controllers.FitbitController.getUserProfile(userId)
+GET	/fitbit/oauth/callback					controllers.FitbitController.oauthCallback()
+GET	/fitbit/user/profile/:userId			controllers.FitbitController.getUserProfile(userId)
+GET	/fitbit/user/:userId/activities/:date	controllers.FitbitController.getUserActivities(userId, date)

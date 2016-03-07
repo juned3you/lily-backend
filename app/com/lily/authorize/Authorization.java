@@ -1,11 +1,14 @@
 package com.lily.authorize;
 
-import con.lily.exception.AuthorizationException;
+import com.google.inject.ImplementedBy;
+import com.lily.authorize.fitbit.FitbitAuthorizationImpl;
+import com.lily.exception.AuthorizationException;
 
 /**
  * Base authorization.
  * @author Mohammad 
  */
+@ImplementedBy(FitbitAuthorizationImpl.class)
 public interface Authorization {
 	
 	/**

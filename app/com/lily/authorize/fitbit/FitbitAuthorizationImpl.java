@@ -13,10 +13,9 @@ import com.github.scribejava.core.oauth.OAuth20Service;
 import com.lily.authorize.Authorization;
 import com.lily.authorize.AuthorizationRequest;
 import com.lily.authorize.AuthorizationResponse;
+import com.lily.exception.AuthorizationException;
 import com.lily.models.AccessToken;
 import com.lily.models.Client;
-
-import con.lily.exception.AuthorizationException;
 
 /**
  * Fitbit authorization steps.

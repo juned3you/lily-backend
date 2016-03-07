@@ -1,4 +1,4 @@
-package con.lily.scheduler;
+package com.lily.scheduler;
 
 /**
  * Schedule Akka job and cancel.

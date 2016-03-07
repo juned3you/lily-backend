@@ -1,18 +1,21 @@
 package controllers;
 
+import java.text.ParseException;
+
+import javax.inject.Inject;
+
 import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
 
 import com.lily.authorize.Authorization;
 import com.lily.authorize.AuthorizationRequest;
-import com.lily.authorize.AuthorizationResponse;
 import com.lily.authorize.fitbit.FitbitException;
+import com.lily.exception.AuthorizationException;
 import com.lily.factory.AuthorizationFactory;
 import com.lily.services.FitbitService;
+import com.lily.utils.DateUtils;
 import com.lily.utils.LilyConstants;
-
-import con.lily.exception.AuthorizationException;
 
 /**
  * Fitbit controller for Fitbit operations.
@@ -21,6 +24,9 @@ import con.lily.exception.AuthorizationException;
  *
  */
 public class FitbitController extends Controller {
+
+	@Inject
+	private FitbitService fitbitService;
 
 	/**
 	 * check Fitbit code in request and register user.
@@ -35,9 +41,7 @@ public class FitbitController extends Controller {
 
 		AuthorizationRequest authRequest = new AuthorizationRequest();
 		authRequest.authorizationCode = code;
-		Authorization auth = AuthorizationFactory
-				.getAuthorizationImpl(LilyConstants.FITBIT_CLIENT_NAME);
-		return ok(Json.toJson(auth.authorize(authRequest).userId));
+		return ok(Json.toJson(fitbitService.getAuthResponseByCode(code).userId));
 	}
 
 	/**
@@ -51,8 +55,32 @@ public class FitbitController extends Controller {
 			return badRequest("No userId found in request !!");
 		String response = null;
 		try {
-			FitbitService fitbitService = new FitbitService();
 			response = fitbitService.getUserProfile(userId);
+		} catch (FitbitException e) {
+			return badRequest(e.getMessage());
+		}
+
+		return ok(response);
+	}
+
+	/**
+	 * Get Fitbit user activities.
+	 * 
+	 * @return
+	 * @throws AuthorizationException
+	 */
+	public Result getUserActivities(String userId, String date) {
+		if (userId == null || date == null)
+			return badRequest("No userId or date found in request !!");
+		try {
+			DateUtils.formatDate(date);
+		} catch (ParseException ex) {
+			return badRequest("Invalid date format!!. Date should be yyyy-MM-dd format.");
+		}
+
+		String response = null;
+		try {
+			response = fitbitService.getDailyActivitySummary(userId, date);
 		} catch (FitbitException e) {
 			return badRequest(e.getMessage());
 		}
