@@ -22,6 +22,7 @@ public class JobScheduler {
 	 * Cancel all Akka jobs
 	 */
 	public static void stopJobs() {
-		firbitScheduler.cancel();
+		if (firbitScheduler != null)
+			firbitScheduler.cancel();
 	}
 }

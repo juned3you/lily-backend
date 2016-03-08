@@ -88,4 +88,69 @@ public class FitbitController extends Controller {
 		return ok(response);
 	}
 
+	/**
+	 * Get Fitbit user sleep.
+	 * 
+	 * @return
+	 * @throws AuthorizationException
+	 */
+	public Result getSleep(String userId, String date) {
+		if (userId == null || date == null)
+			return badRequest("No userId or date found in request !!");
+		try {
+			DateUtils.formatDate(date);
+		} catch (ParseException ex) {
+			return badRequest("Invalid date format!!. Date should be yyyy-MM-dd format.");
+		}
+
+		String response = null;
+		try {
+			response = fitbitService.getSleep(userId, date);
+		} catch (FitbitException e) {
+			return badRequest(e.getMessage());
+		}
+
+		return ok(response);
+	}
+
+	/**
+	 * Get Fitbit user sleep goal.
+	 * 
+	 * @return
+	 * @throws AuthorizationException
+	 */
+	public Result getSleepGoal(String userId) {
+		if (userId == null)
+			return badRequest("No userId found in request !!");
+
+		String response = null;
+		try {
+			response = fitbitService.getSleepGoal(userId);
+		} catch (FitbitException e) {
+			return badRequest(e.getMessage());
+		}
+
+		return ok(response);
+	}
+
+	/**
+	 * Compose dynamic route
+	 * 
+	 * @return
+	 * @throws AuthorizationException
+	 */
+	public Result dynamicRoute(String userId, String uri) {
+		if (userId == null || uri == null)
+			return badRequest("No userId or uri found in request !!");
+
+		String response = null;
+		try {
+			response = fitbitService.getDynamicData(userId, uri);
+		} catch (FitbitException e) {
+			return badRequest(e.getMessage());
+		}
+
+		return ok(response);
+	}
+
 }

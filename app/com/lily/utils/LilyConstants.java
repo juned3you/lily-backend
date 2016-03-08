@@ -20,5 +20,7 @@ public interface LilyConstants {
 		
 		public String USER_PROFILE_URI = "fitbit.api.user.profile.uri";
 		public String DAILY_ACTIVITIES_URI = "fitbit.api.user.daily.activities.uri";
+		public String SLEEP_URI = "fitbit.api.user.sleep.uri";
+		public String SLEEP_GOAL_URI = "fitbit.api.user.sleep.goal.uri";
 	}
 }

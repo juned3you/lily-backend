@@ -78,6 +78,73 @@ public class FitbitService {
 			throw new FitbitException(e);
 		}
 	}
+	
+	/**
+	 * Get Sleep.
+	 * 
+	 * @param userId
+	 * * @param date
+	 * @return
+	 */
+	public String getSleep(String userId, String date)
+			throws FitbitException {
+		try {
+			String userEndpoint = ConfigFactory.load().getString(
+					LilyConstants.Fitbit.SLEEP_URI);
+			Response response = getServerResponse(
+					userId,
+					Verb.GET,
+					fitbitClient.endpoint
+							+ String.format(userEndpoint, userId, date));
+			return response.getBody();
+		} catch (Exception e) {
+			throw new FitbitException(e);
+		}
+	}
+	
+	/**
+	 * Get Sleep.
+	 * 
+	 * @param userId
+	 * * @param date
+	 * @return
+	 */
+	public String getSleepGoal(String userId)
+			throws FitbitException {
+		try {
+			String userEndpoint = ConfigFactory.load().getString(
+					LilyConstants.Fitbit.SLEEP_GOAL_URI);
+			Response response = getServerResponse(
+					userId,
+					Verb.GET,
+					fitbitClient.endpoint
+							+ String.format(userEndpoint, userId));
+			return response.getBody();
+		} catch (Exception e) {
+			throw new FitbitException(e);
+		}
+	}
+	
+	/**
+	 * Dynamic route
+	 * 
+	 * @param userId
+	 * * @param date
+	 * @return
+	 */
+	public String getDynamicData(String userId, String uri)
+			throws FitbitException {
+		try {			
+			Response response = getServerResponse(
+					userId,
+					Verb.GET,
+					fitbitClient.endpoint
+							+ String.format("/user/%s/%s.json", userId, uri));
+			return response.getBody();
+		} catch (Exception e) {
+			throw new FitbitException(e);
+		}
+	}
 
 	/**
 	 * Gets Auth response based on user id.

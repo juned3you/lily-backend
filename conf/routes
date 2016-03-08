@@ -17,6 +17,9 @@ POST	/user/login							controllers.UserController.authenticate()
 #Oauth2 urls
 GET	/oauth/url/:clientName					controllers.AuthorizationController.getAuthorizationUrl(clientName)
 
-GET	/fitbit/oauth/callback					controllers.FitbitController.oauthCallback()
-GET	/fitbit/user/profile/:userId			controllers.FitbitController.getUserProfile(userId)
-GET	/fitbit/user/:userId/activities/:date	controllers.FitbitController.getUserActivities(userId, date)
+GET		/fitbit/oauth/callback						controllers.FitbitController.oauthCallback()
+GET		/fitbit/user/profile/:userId				controllers.FitbitController.getUserProfile(userId)
+#GET	/fitbit/user/:userId/activities/date/:date	controllers.FitbitController.getUserActivities(userId, date)
+#GET	/fitbit/user/:userId/sleep/date/:date		controllers.FitbitController.getSleep(userId, date)
+#GET	/fitbit/user/:userId/sleep/goal				controllers.FitbitController.getSleepGoal(userId)
+GET		/fitbit/user/:userId/*uri					controllers.FitbitController.dynamicRoute(userId, uri)
