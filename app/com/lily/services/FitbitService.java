@@ -10,6 +10,7 @@ import com.github.scribejava.core.oauth.OAuth20Service;
 import com.lily.authorize.Authorization;
 import com.lily.authorize.AuthorizationRequest;
 import com.lily.authorize.AuthorizationResponse;
+import com.lily.authorize.fitbit.FitbitAuthorizationImpl;
 import com.lily.authorize.fitbit.FitbitException;
 import com.lily.authorize.fitbit.FitbitOAuth2Service;
 import com.lily.exception.AuthorizationException;
@@ -36,6 +37,9 @@ public class FitbitService {
 		fitbitClient = FitbitOAuth2Service.getFitbitClient();
 		service = FitbitOAuth2Service
 				.getFitbitOAuth2ServiceInstance(fitbitClient);
+		
+		if(authorization == null)
+			authorization = new FitbitAuthorizationImpl();
 	}
 
 	/**

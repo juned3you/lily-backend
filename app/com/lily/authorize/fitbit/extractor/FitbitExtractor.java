@@ -4,19 +4,25 @@ import com.lily.exception.ExtractorException;
 import com.lily.extractor.Extractor;
 import com.lily.extractor.ExtractorRequest;
 import com.lily.extractor.ExtractorResponse;
+import com.lily.services.FitbitService;
 
 /**
  * Fitbit profile extractor.
+ * 
  * @author Mohammad
  *
  */
-public class FitbitExtractor implements Extractor{
+public class FitbitExtractor implements Extractor {	
 
 	@Override
 	public ExtractorResponse extract(ExtractorRequest request)
 			throws ExtractorException {
-		// TODO Auto-generated method stub
-		return null;
+		try {
+			String response = new FitbitService().getDynamicData(request.getUserId(),
+					request.getUri());
+			return new ExtractorResponse(response);
+		} catch (Exception e) {
+			throw new ExtractorException(e);
+		}
 	}
-
 }

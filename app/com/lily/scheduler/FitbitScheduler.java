@@ -26,13 +26,20 @@ public class FitbitScheduler implements Scheduler {
 
 	private List<Cancellable> schedulerList;
 
+	/**
+	 * Schedule multiple jobs using Actors.
+	 */
 	@Override
 	public void schedule() {
 		schedulerList = new ArrayList<Cancellable>();
-		int hour = ConfigFactory.load().getInt("fitbit.scheduler.invoke.hour");
-		int mins = ConfigFactory.load().getInt("fitbit.scheduler.invoke.mins");
-		int seconds = DateUtils.nextExecutionInSeconds(hour, mins,
+
+		final int hour = ConfigFactory.load().getInt(
+				"fitbit.scheduler.invoke.hour");
+		final int mins = ConfigFactory.load().getInt(
+				"fitbit.scheduler.invoke.mins");
+		final int seconds = DateUtils.nextExecutionInSeconds(hour, mins,
 				DateUtils.getCetDateTime());
+
 		FiniteDuration startDelay = Duration.create(seconds, TimeUnit.SECONDS);
 		FiniteDuration intervalInHours = Duration.create(24, TimeUnit.HOURS);
 
@@ -70,7 +77,7 @@ public class FitbitScheduler implements Scheduler {
 	@Override
 	public void cancel() {
 		if (schedulerList != null) {
-			schedulerList.stream().forEach((scheduler) -> {
+			schedulerList.stream().forEach(scheduler -> {
 				scheduler.cancel();
 			});
 		}

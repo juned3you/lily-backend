@@ -38,7 +38,7 @@ public class Global extends GlobalSettings {
 
 	@Override
 	public void onStart(Application arg0) {
-		//JobScheduler.scheduleJobs();
+		JobScheduler.scheduleJobs();
 	}
 
 	@Override
