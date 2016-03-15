@@ -8,14 +8,11 @@ import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
 
-import com.lily.authorize.Authorization;
 import com.lily.authorize.AuthorizationRequest;
 import com.lily.authorize.fitbit.FitbitException;
 import com.lily.exception.AuthorizationException;
-import com.lily.factory.AuthorizationFactory;
 import com.lily.services.FitbitService;
 import com.lily.utils.DateUtils;
-import com.lily.utils.LilyConstants;
 
 /**
  * Fitbit controller for Fitbit operations.
@@ -139,7 +136,7 @@ public class FitbitController extends Controller {
 	 * @return
 	 * @throws AuthorizationException
 	 */
-	public Result dynamicRoute(String userId, String uri) {
+	public Result dynamicRouteWithUser(String userId, String uri) {
 		if (userId == null || uri == null)
 			return badRequest("No userId or uri found in request !!");
 
