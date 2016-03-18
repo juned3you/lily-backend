@@ -9,11 +9,13 @@ scalaVersion := "2.11.6"
 libraryDependencies ++= Seq(
   javaJdbc,
   cache,  
-  "mysql" 			% "mysql-connector-java" 	% "5.1.18",
+  //"mysql" 			% "mysql-connector-java" 	% "5.1.18",
+  "org.postgresql" 	% "postgresql" 				% "9.4.1208.jre7",
   "org.mindrot" 	% "jbcrypt" 				% "0.3m",
   "com.github.scribejava" % "scribejava-apis" 	% "2.3.0",
   "com.github.scribejava" % "scribejava-core" 	% "2.3.0",
-  "com.ning" 			  % "async-http-client" % "1.9.33"
+  "com.ning" 			  % "async-http-client" % "1.9.33",
+  "commons-beanutils" 	  % "commons-beanutils" % "1.9.2"
 )
 
 // Play provides two styles of routers, one expects its actions to be injected, the

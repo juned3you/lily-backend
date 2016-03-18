@@ -4,10 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import com.lily.actors.FitbitProfileActor;
-import com.lily.utils.DateUtils;
-import com.typesafe.config.ConfigFactory;
-
 import play.Logger;
 import play.libs.Akka;
 import scala.concurrent.duration.Duration;
@@ -15,6 +11,13 @@ import scala.concurrent.duration.FiniteDuration;
 import akka.actor.ActorRef;
 import akka.actor.Cancellable;
 import akka.actor.Props;
+
+import com.avaje.ebean.Ebean;
+import com.lily.actors.FitBitActor;
+import com.lily.models.FitbitUser;
+import com.lily.models.User;
+import com.lily.utils.DateUtils;
+import com.typesafe.config.ConfigFactory;
 
 /**
  * Fitbit scheduler.
@@ -43,8 +46,15 @@ public class FitbitScheduler implements Scheduler {
 		FiniteDuration startDelay = Duration.create(seconds, TimeUnit.SECONDS);
 		FiniteDuration intervalInHours = Duration.create(24, TimeUnit.HOURS);
 
-		schedulerList.add(getSchedulerCancellable(FitbitProfileActor.props,
-				startDelay, intervalInHours, "FitbitProfile"));
+		
+		//Creating scheduler for per user call.
+		List<FitbitUser> user = Ebean.createQuery(FitbitUser.class).findList();
+		user.stream().forEach(
+				usr -> {
+					schedulerList.add(getSchedulerCancellable(
+							FitBitActor.props, startDelay, intervalInHours,
+							usr));
+				});
 	}
 
 	/**

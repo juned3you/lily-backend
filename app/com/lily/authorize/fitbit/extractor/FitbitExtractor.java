@@ -14,6 +14,9 @@ import com.lily.services.FitbitService;
  */
 public class FitbitExtractor implements Extractor {	
 
+	/**
+	 * Extract any url, just pass userid and uri.
+	 */
 	@Override
 	public ExtractorResponse extract(ExtractorRequest request)
 			throws ExtractorException {

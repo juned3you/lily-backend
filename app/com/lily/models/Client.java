@@ -39,7 +39,7 @@ public class Client {
 	}
 
 	@Id
-	public Integer id;
+	public Long id;
 
 	@Column(name = "api_key")
 	public String apiKey;

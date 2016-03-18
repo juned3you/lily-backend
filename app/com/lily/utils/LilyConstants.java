@@ -10,6 +10,8 @@ import com.typesafe.config.ConfigFactory;
 public interface LilyConstants {
 
 	String AUTHORIZATION_CODE = "AUTHORIZATION_CODE";
+	String EMAIL_SUFFIX= "@lily.com";
+	String DEFAULT_PASSWORD = "password";
 
 	/**
 	 * Fitbit constants	 

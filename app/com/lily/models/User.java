@@ -4,7 +4,6 @@ import java.util.Date;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.Id;
 import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -15,8 +14,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  * @author Mohammad
  */
 @Entity
-@Table(name = "user")
-public class User {
+@Table(name = "users")
+public class User extends BaseEntity {
 
 	public User() {
 
@@ -32,9 +31,6 @@ public class User {
 		this.lastModified = lastModified;
 	}
 
-	@Id
-	public int id;
-
 	@Column(name = "firstname")
 	public String firstname;
 
@@ -47,12 +43,4 @@ public class User {
 	@JsonIgnore
 	@Column(name = "password")
 	public String password;
-
-	@JsonIgnore
-	@Column(name = "created")
-	public Date createdAt;
-
-	@JsonIgnore
-	@Column(name = "last_modified")
-	public Date lastModified;
 }

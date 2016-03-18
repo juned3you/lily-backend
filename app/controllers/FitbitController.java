@@ -30,15 +30,23 @@ public class FitbitController extends Controller {
 	 * 
 	 * @return
 	 * @throws AuthorizationException
+	 * @throws FitbitException
 	 */
-	public Result oauthCallback() throws AuthorizationException {
+	public Result oauthCallback() throws Exception {
 		final String code = request().getQueryString("code");
 		if (code == null)
 			return badRequest("No authorization code found !!");
 
 		AuthorizationRequest authRequest = new AuthorizationRequest();
 		authRequest.authorizationCode = code;
-		return ok(Json.toJson(fitbitService.getAuthResponseByCode(code).userId));
+		String userId = fitbitService.getAuthResponseByCode(code).userId;
+		if (userId == null)
+			throw new AuthorizationException(
+					"User id not found in fitbit response!!");
+		
+		//Register to our db.
+		fitbitService.createUpdateUser(userId);
+		return ok(Json.toJson(userId));
 	}
 
 	/**

@@ -1,13 +1,16 @@
 package controllers;
 
-import play.*;
-import play.mvc.*;
-
+import play.mvc.Controller;
+import play.mvc.Result;
 import views.html.*;
 
 public class Application extends Controller {
 
-    public Result index() {
+	//@Inject
+	//private FitbitService fitbitService;
+	
+    public Result index() throws Exception {
+    	//fitbitService.createUpdateUser("4CMMSH");
         return ok(index.render("Your new application is ready."));
     }
     
