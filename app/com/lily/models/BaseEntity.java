@@ -15,7 +15,7 @@ public abstract class BaseEntity {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
-	public Long id;
+	public Integer id;
 	
 	
 	@JsonIgnore
