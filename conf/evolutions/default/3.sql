@@ -1,6 +1,6 @@
 CREATE TABLE fitbit_user
 (
-  id bigint IDENTITY(1,1) NOT NULL,
+  id bigint NOT NULL,
   age int null,
   avatar text null,  
   avatar150 text null,

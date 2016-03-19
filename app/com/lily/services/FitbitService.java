@@ -105,7 +105,7 @@ public class FitbitService {
 				FitbitUser persistFitbitUser = Ebean
 						.createQuery(FitbitUser.class).where().eq("user", user)
 						.findUnique();
-				Integer id = persistFitbitUser.id;
+				Long id = persistFitbitUser.id;
 				Date createdAt = persistFitbitUser.createdAt;
 				
 				//Copy new properties.
