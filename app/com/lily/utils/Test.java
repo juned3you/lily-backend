@@ -2,9 +2,9 @@ package com.lily.utils;
 
 import java.util.Scanner;
 
+import play.db.jpa.JPA;
 import play.libs.Json;
 
-import com.avaje.ebean.Ebean;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.github.scribejava.core.builder.ServiceBuilder;
 import com.github.scribejava.core.model.OAuth2AccessToken;
@@ -15,7 +15,6 @@ import com.github.scribejava.core.model.Verifier;
 import com.github.scribejava.core.oauth.OAuth20Service;
 import com.lily.authorize.fitbit.FitbitApi;
 import com.lily.models.Client;
-import com.typesafe.config.ConfigFactory;
 
 /**
  * Auth test with Scribe java.
@@ -25,14 +24,16 @@ import com.typesafe.config.ConfigFactory;
  */
 public class Test {
 
-	public static void main(String[] str) {
+	public static void main(String[] str) throws Throwable {
 		// Initialize client
-		Client fitbitClient = Ebean
-				.find(Client.class)
-				.where()
-				.eq("name",
-						ConfigFactory.load().getString("fitbit.client.name"))
-				.findUnique();
+		@SuppressWarnings("unchecked")
+		Client fitbitClient = JPA.withTransaction(() -> {
+			return (Client) JPA.em()
+					.createQuery("FROM Client where name = :name")
+					.setParameter("name", LilyConstants.Fitbit.CLIENT_NAME)
+					.getResultList()
+					.stream().findFirst().orElse(null);
+		});
 
 		// Create OAuth20Service for FitbitApi
 		OAuth20Service service = new ServiceBuilder()

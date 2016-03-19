@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import play.Logger;
+import play.db.jpa.JPA;
+import play.db.jpa.Transactional;
 import play.libs.Akka;
 import scala.concurrent.duration.Duration;
 import scala.concurrent.duration.FiniteDuration;
@@ -12,10 +14,9 @@ import akka.actor.ActorRef;
 import akka.actor.Cancellable;
 import akka.actor.Props;
 
-import com.avaje.ebean.Ebean;
 import com.lily.actors.FitBitActor;
+import com.lily.models.Client;
 import com.lily.models.FitbitUser;
-import com.lily.models.User;
 import com.lily.utils.DateUtils;
 import com.typesafe.config.ConfigFactory;
 
@@ -32,7 +33,9 @@ public class FitbitScheduler implements Scheduler {
 	/**
 	 * Schedule multiple jobs using Actors.
 	 */
+	@SuppressWarnings("unchecked")
 	@Override
+	@Transactional
 	public void schedule() {
 		schedulerList = new ArrayList<Cancellable>();
 
@@ -46,15 +49,25 @@ public class FitbitScheduler implements Scheduler {
 		FiniteDuration startDelay = Duration.create(seconds, TimeUnit.SECONDS);
 		FiniteDuration intervalInHours = Duration.create(24, TimeUnit.HOURS);
 
-		
-		//Creating scheduler for per user call.
-		List<FitbitUser> user = Ebean.createQuery(FitbitUser.class).findList();
-		user.stream().forEach(
-				usr -> {
-					schedulerList.add(getSchedulerCancellable(
-							FitBitActor.props, startDelay, intervalInHours,
-							usr));
-				});
+		// Creating scheduler for per user call.
+		List<FitbitUser> user = null;
+		try {
+			user = JPA.withTransaction(() -> {
+				return (List<FitbitUser>) JPA.em()
+						.createQuery("From FitbitUser").getResultList();
+			});
+		} catch (Throwable e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		if (user != null)
+			user.stream().forEach(
+					usr -> {
+						schedulerList.add(getSchedulerCancellable(
+								FitBitActor.props, startDelay, intervalInHours,
+								usr));
+					});
 	}
 
 	/**

@@ -13,7 +13,8 @@ public class AuthorizationFactory {
 	 * @return
 	 */
 	public static Authorization getAuthorizationImpl(String clientName) {
-		if (clientName.equals(LilyConstants.Fitbit.CLIENT_NAME)) {		
+		if (clientName.equals(LilyConstants.Fitbit.CLIENT_NAME)
+				|| clientName.equals("fitbitdev")) {
 			return new FitbitAuthorizationImpl();
 		}
 		return null;

@@ -40,8 +40,7 @@ public class AccessToken{
 	@Column(name = "refresh_token")
 	public String refreshToken;
 
-	@ManyToOne
-	@JoinColumn(name = "user_id")
+	@Column(name = "user_id")
 	public String userId;
 
 	@Column(name = "token_type")

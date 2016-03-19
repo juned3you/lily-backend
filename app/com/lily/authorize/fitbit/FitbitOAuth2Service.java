@@ -4,7 +4,9 @@ import java.io.UnsupportedEncodingException;
 import java.util.Base64;
 import java.util.Map;
 
-import com.avaje.ebean.Ebean;
+import play.db.jpa.JPA;
+import play.db.jpa.Transactional;
+
 import com.github.scribejava.core.builder.ServiceBuilder;
 import com.github.scribejava.core.builder.api.DefaultApi20;
 import com.github.scribejava.core.model.AbstractRequest;
@@ -15,6 +17,7 @@ import com.github.scribejava.core.model.OAuthRequest;
 import com.github.scribejava.core.model.Verifier;
 import com.github.scribejava.core.oauth.OAuth20Service;
 import com.lily.models.Client;
+import com.lily.utils.JpaUtils;
 import com.lily.utils.LilyConstants;
 
 /**
@@ -44,9 +47,23 @@ public class FitbitOAuth2Service extends OAuth20Service {
 	 * 
 	 * @return
 	 */
+	@Transactional
 	public static Client getFitbitClient() {
-		Client fitbitClient = Ebean.find(Client.class).where()
-				.eq("name", LilyConstants.Fitbit.CLIENT_NAME).findUnique();
+
+		Client fitbitClient = null;
+		try {
+			fitbitClient = JPA.withTransaction(() -> {
+				return JpaUtils.getSingleResultOrElseNull(
+						JPA.em()
+								.createQuery("FROM Client where name = :name")
+								.setParameter("name",
+										LilyConstants.Fitbit.CLIENT_NAME),
+						Client.class);
+			});
+		} catch (Throwable e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		return fitbitClient;
 	}
 
@@ -72,9 +89,22 @@ public class FitbitOAuth2Service extends OAuth20Service {
 	 * 
 	 * @return
 	 */
+	@Transactional
 	public static OAuth20Service getFitbitOAuth2ServiceInstance() {
-		Client fitbitClient = Ebean.find(Client.class).where()
-				.eq("name", LilyConstants.Fitbit.CLIENT_NAME).findUnique();
+		Client fitbitClient = null;
+		try {
+			fitbitClient = JPA.withTransaction(() -> {
+				return JpaUtils.getSingleResultOrElseNull(
+						JPA.em()
+								.createQuery("FROM Client where name = :name")
+								.setParameter("name",
+										LilyConstants.Fitbit.CLIENT_NAME),
+						Client.class);
+			});
+		} catch (Throwable e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		// Create OAuth20Service for FitbitApi
 		OAuth20Service service = new ServiceBuilder()
 				.apiKey(fitbitClient.apiKey).apiSecret(fitbitClient.apiSecret)

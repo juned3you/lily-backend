@@ -5,13 +5,15 @@ import java.util.Date;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import javax.persistence.EntityManager;
 
 import org.apache.commons.beanutils.BeanUtils;
 
 import play.Logger;
+import play.db.jpa.JPA;
+import play.db.jpa.Transactional;
 import play.libs.Json;
 
-import com.avaje.ebean.Ebean;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -28,7 +30,7 @@ import com.lily.authorize.fitbit.FitbitOAuth2Service;
 import com.lily.exception.AuthorizationException;
 import com.lily.models.Client;
 import com.lily.models.FitbitUser;
-import com.lily.models.User;
+import com.lily.utils.JpaUtils;
 import com.lily.utils.JsonUtils;
 import com.lily.utils.LilyConstants;
 import com.lily.utils.PasswordHasher;
@@ -47,7 +49,7 @@ public class FitbitService {
 	private OAuth20Service service;
 
 	@Inject
-	private Authorization authorization;
+	private Authorization authorization;	
 
 	public FitbitService() {
 		fitbitClient = FitbitOAuth2Service.getFitbitClient();
@@ -67,7 +69,8 @@ public class FitbitService {
 	 * @throws JsonParseException
 	 * @throws JsonMappingException
 	 * @throws IOException
-	 */
+	 */	
+	@Transactional
 	public String createUpdateUser(String userId) throws FitbitException,
 			JsonParseException, JsonMappingException, IOException {
 
@@ -80,51 +83,49 @@ public class FitbitService {
 
 		FitbitUser fitbitUser = JsonUtils.fromJson(userNode, FitbitUser.class);
 		try {
-			Ebean.beginTransaction();
-			String email = userId + LilyConstants.EMAIL_SUFFIX;
-			User user = Ebean.createQuery(User.class).where()
-					.eq("email", email).findUnique();
 
-			// New creation
-			if (user == null) {
-				user = new User();
-				user.firstname = fitbitUser.fullName;
-				user.lastname = fitbitUser.fullName;
-				user.email = email;
-				String hashedPassword = PasswordHasher
-						.hash(LilyConstants.DEFAULT_PASSWORD);
-				user.password = hashedPassword;
-				user.createdAt = new Date();
-				Ebean.save(user);
-				fitbitUser.user = user;
-				fitbitUser.createdAt = new Date();
-				Ebean.save(fitbitUser);
-				Logger.info("Created new User profile: " + email);
-			} else { // Update.
+			JPA.withTransaction(() -> {
+				String email = userId + LilyConstants.EMAIL_SUFFIX;
+				EntityManager em = JPA.em();
 
-				FitbitUser persistFitbitUser = Ebean
-						.createQuery(FitbitUser.class).where().eq("user", user)
-						.findUnique();
-				Long id = persistFitbitUser.id;
-				Date createdAt = persistFitbitUser.createdAt;
-				
-				//Copy new properties.
-				BeanUtils.copyProperties(persistFitbitUser, fitbitUser);
-				
-				persistFitbitUser.id = id;
-				persistFitbitUser.user = user;
-				persistFitbitUser.createdAt = createdAt;
-				fitbitUser.lastModified = new Date();
-				Ebean.update(persistFitbitUser);
-				Logger.info("Update User profile: " + email);
-			}
+				FitbitUser persistFitbitUser = JpaUtils
+						.getSingleResultOrElseNull(
+								em.createQuery("FROM User where email = '"
+										+ email + "'"), FitbitUser.class);
 
-			Ebean.commitTransaction();
+				// New creation
+				if (persistFitbitUser == null) {
+					persistFitbitUser = new FitbitUser();
+					BeanUtils.copyProperties(persistFitbitUser, fitbitUser);
+					persistFitbitUser.firstname = fitbitUser.fullName;
+					persistFitbitUser.lastname = fitbitUser.fullName;
+					persistFitbitUser.email = email;
+					String hashedPassword = PasswordHasher
+							.hash(LilyConstants.DEFAULT_PASSWORD);
+					persistFitbitUser.password = hashedPassword;
+					persistFitbitUser.createdAt = new Date();
+
+					em.persist(persistFitbitUser);
+					Logger.info("Created new User profile: " + email);
+				} else { // Update.
+
+					fitbitUser.firstname = persistFitbitUser.firstname;
+					fitbitUser.lastname = persistFitbitUser.lastname;
+					fitbitUser.email = persistFitbitUser.email;					
+					fitbitUser.password = persistFitbitUser.password;
+					fitbitUser.createdAt = persistFitbitUser.createdAt;
+					fitbitUser.id = persistFitbitUser.id;
+
+					// Copy new properties.
+					BeanUtils.copyProperties(persistFitbitUser, fitbitUser);				
+					
+					persistFitbitUser.lastModified = new Date();
+					em.merge(persistFitbitUser);
+					Logger.info("Update User profile: " + email);
+				}
+			});
 		} catch (Exception e) {
-			Ebean.rollbackTransaction();
-			throw new FitbitException(e.getMessage());
-		} finally {
-			Ebean.endTransaction();
+			throw new FitbitException(e);
 		}
 		return userId;
 	}

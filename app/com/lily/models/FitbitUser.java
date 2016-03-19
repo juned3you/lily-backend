@@ -2,7 +2,7 @@ package com.lily.models;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.OneToOne;
+import javax.persistence.PrimaryKeyJoinColumn;
 import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -14,7 +14,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  */
 @Entity
 @Table(name = "fitbit_user")
-public class FitbitUser extends BaseEntity {
+@PrimaryKeyJoinColumn(name="user_id")
+public class FitbitUser extends User {
 
 	@Column(name = "age")
 	public Integer age;
@@ -109,9 +110,253 @@ public class FitbitUser extends BaseEntity {
 	public Float weight;
 
 	@Column(name = "weight_unit")
-	public String weightUnit; // unit
+	public String weightUnit; // unit	
 
-	@Column(name = "user_id")
-	@OneToOne
-	public User user;
+	public Integer getAge() {
+		return age;
+	}
+
+	public void setAge(Integer age) {
+		this.age = age;
+	}
+
+	public String getAvatar() {
+		return avatar;
+	}
+
+	public void setAvatar(String avatar) {
+		this.avatar = avatar;
+	}
+
+	public String getAvatar150() {
+		return avatar150;
+	}
+
+	public void setAvatar150(String avatar150) {
+		this.avatar150 = avatar150;
+	}
+
+	public Integer getAverageDailySteps() {
+		return averageDailySteps;
+	}
+
+	public void setAverageDailySteps(Integer averageDailySteps) {
+		this.averageDailySteps = averageDailySteps;
+	}
+
+	public Boolean getCorporate() {
+		return corporate;
+	}
+
+	public void setCorporate(Boolean corporate) {
+		this.corporate = corporate;
+	}
+
+	public String getCountry() {
+		return country;
+	}
+
+	public void setCountry(String country) {
+		this.country = country;
+	}
+
+	public String getDateOfBirth() {
+		return dateOfBirth;
+	}
+
+	public void setDateOfBirth(String dateOfBirth) {
+		this.dateOfBirth = dateOfBirth;
+	}
+
+	public String getDisplayName() {
+		return displayName;
+	}
+
+	public void setDisplayName(String displayName) {
+		this.displayName = displayName;
+	}
+
+	public String getDistanceUnit() {
+		return distanceUnit;
+	}
+
+	public void setDistanceUnit(String distanceUnit) {
+		this.distanceUnit = distanceUnit;
+	}
+
+	public String getEncodedId() {
+		return encodedId;
+	}
+
+	public void setEncodedId(String encodedId) {
+		this.encodedId = encodedId;
+	}
+
+	public String getFeatures() {
+		return features;
+	}
+
+	public void setFeatures(String features) {
+		this.features = features;
+	}
+
+	public String getFoodsLocale() {
+		return foodsLocale;
+	}
+
+	public void setFoodsLocale(String foodsLocale) {
+		this.foodsLocale = foodsLocale;
+	}
+
+	public String getFullName() {
+		return fullName;
+	}
+
+	public void setFullName(String fullName) {
+		this.fullName = fullName;
+	}
+
+	public String getGender() {
+		return gender;
+	}
+
+	public void setGender(String gender) {
+		this.gender = gender;
+	}
+
+	public String getGlucoseUnit() {
+		return glucoseUnit;
+	}
+
+	public void setGlucoseUnit(String glucoseUnit) {
+		this.glucoseUnit = glucoseUnit;
+	}
+
+	public Float getHeight() {
+		return height;
+	}
+
+	public void setHeight(Float height) {
+		this.height = height;
+	}
+
+	public String getHeightUnit() {
+		return heightUnit;
+	}
+
+	public void setHeightUnit(String heightUnit) {
+		this.heightUnit = heightUnit;
+	}
+
+	public String getLocale() {
+		return locale;
+	}
+
+	public void setLocale(String locale) {
+		this.locale = locale;
+	}
+
+	public String getMemberSince() {
+		return memberSince;
+	}
+
+	public void setMemberSince(String memberSince) {
+		this.memberSince = memberSince;
+	}
+
+	public String getOffsetFromUTCMillis() {
+		return offsetFromUTCMillis;
+	}
+
+	public void setOffsetFromUTCMillis(String offsetFromUTCMillis) {
+		this.offsetFromUTCMillis = offsetFromUTCMillis;
+	}
+
+	public String getStartDayOfWeek() {
+		return startDayOfWeek;
+	}
+
+	public void setStartDayOfWeek(String startDayOfWeek) {
+		this.startDayOfWeek = startDayOfWeek;
+	}
+
+	public Float getStrideLengthRunning() {
+		return strideLengthRunning;
+	}
+
+	public void setStrideLengthRunning(Float strideLengthRunning) {
+		this.strideLengthRunning = strideLengthRunning;
+	}
+
+	public String getStrideLengthRunningType() {
+		return strideLengthRunningType;
+	}
+
+	public void setStrideLengthRunningType(String strideLengthRunningType) {
+		this.strideLengthRunningType = strideLengthRunningType;
+	}
+
+	public Float getStrideLengthWalking() {
+		return strideLengthWalking;
+	}
+
+	public void setStrideLengthWalking(Float strideLengthWalking) {
+		this.strideLengthWalking = strideLengthWalking;
+	}
+
+	public String getStrideLengthWalkingType() {
+		return strideLengthWalkingType;
+	}
+
+	public void setStrideLengthWalkingType(String strideLengthWalkingType) {
+		this.strideLengthWalkingType = strideLengthWalkingType;
+	}
+
+	public String getTimezone() {
+		return timezone;
+	}
+
+	public void setTimezone(String timezone) {
+		this.timezone = timezone;
+	}
+
+	public String getTopBadges() {
+		return topBadges;
+	}
+
+	public void setTopBadges(String topBadges) {
+		this.topBadges = topBadges;
+	}
+
+	public String getWaterUnit() {
+		return waterUnit;
+	}
+
+	public void setWaterUnit(String waterUnit) {
+		this.waterUnit = waterUnit;
+	}
+
+	public String getWaterUnitName() {
+		return waterUnitName;
+	}
+
+	public void setWaterUnitName(String waterUnitName) {
+		this.waterUnitName = waterUnitName;
+	}
+
+	public Float getWeight() {
+		return weight;
+	}
+
+	public void setWeight(Float weight) {
+		this.weight = weight;
+	}
+
+	public String getWeightUnit() {
+		return weightUnit;
+	}
+
+	public void setWeightUnit(String weightUnit) {
+		this.weightUnit = weightUnit;
+	}
 }

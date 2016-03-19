@@ -1,6 +1,6 @@
 CREATE TABLE fitbit_user
 (
-  id bigint NOT NULL,
+  id bigint IDENTITY(1,1) NOT NULL,
   age int null,
   avatar text null,  
   avatar150 text null,
@@ -33,7 +33,5 @@ CREATE TABLE fitbit_user
   weight float null,
   weight_unit text null,
   user_id bigint not null,  
-  created TIMESTAMP NOT NULL,
-  last_modified TIMESTAMP,
   CONSTRAINT  pk_fitbit_id PRIMARY KEY (id)
 );
