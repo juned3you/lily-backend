@@ -14,7 +14,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 public abstract class BaseEntity {	
 	
 	@Id	
-	@Column(name = "id")
+	@Column(name = "id", insertable = false)
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	public Long id;
 	
