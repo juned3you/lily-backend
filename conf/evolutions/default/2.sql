@@ -1,6 +1,6 @@
 CREATE TABLE client
 (
-  id bigint IDENTITY(1,1),
+  id bigint IDENTITY(1,1) NOT NULL,
   name character varying(50),
   api_key character varying(100),
   api_secret character varying(100),
