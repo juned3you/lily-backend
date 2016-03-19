@@ -9,6 +9,7 @@
 		<non-jta-data-source>DefaultDS</non-jta-data-source>
 		<properties>
 			<property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQLDialect" />
+			<!-- property name="eclipselink.jdbc.bind-parameters" value="false" / --> 
 		</properties>
 	</persistence-unit>
 

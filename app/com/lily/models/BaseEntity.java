@@ -7,6 +7,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.MappedSuperclass;
+import javax.persistence.SequenceGenerator;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -14,8 +15,10 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 public abstract class BaseEntity {	
 	
 	@Id	
-	@Column(name = "id", insertable = false)
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "id")
+	@SequenceGenerator(name="seq", initialValue=10, allocationSize=100)
+	@GeneratedValue(strategy=GenerationType.SEQUENCE, generator="seq")
+	//@GeneratedValue(strategy = GenerationType.IDENTITY)
 	public Long id;
 	
 	public Long getId() {
