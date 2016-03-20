@@ -10,10 +10,7 @@ import javax.persistence.Table;
 @Entity
 @Table(name = "lilyuser")
 @PrimaryKeyJoinColumn(name = "user_id")
-public class LilyUser extends User {
-
-	@Column(name = "user_id")
-	public Long userId;	
+public class LilyUser extends User {	
 	
 	@Column(name = "testfield")
 	public String testfield;
