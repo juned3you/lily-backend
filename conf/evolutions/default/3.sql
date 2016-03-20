@@ -1,6 +1,6 @@
 CREATE TABLE fitbituser
 (
-  id bigint NOT NULL,
+  user_id bigint NOT NULL,
   age int null,
   avatar text null,  
   avatar150 text null,
@@ -35,5 +35,6 @@ CREATE TABLE fitbituser
 );
 
 CREATE TABLE lilyuser(
+    user_id bigint NOT NULL,
 	testfield text null
 );

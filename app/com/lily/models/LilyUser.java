@@ -9,19 +9,11 @@ import javax.persistence.Table;
 
 @Entity
 @Table(name = "lilyuser")
-@PrimaryKeyJoinColumn(name = "id")
+@PrimaryKeyJoinColumn(name = "user_id")
 public class LilyUser extends User {
 
-	@Column(name = "id")
-	public Long id;
-
-	public Long getId() {
-		return id;
-	}
-
-	public void setId(Long id) {
-		this.id = id;
-	}
+	@Column(name = "user_id")
+	public Long userId;	
 	
 	@Column(name = "testfield")
 	public String testfield;

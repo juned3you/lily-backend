@@ -14,19 +14,11 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  */
 @Entity
 @Table(name = "fitbituser")
-@PrimaryKeyJoinColumn(name = "id")
+@PrimaryKeyJoinColumn(name = "user_id")
 public class FitbitUser extends User {
 
-	@Column(name = "id")
-	public Long id;
-
-	public Long getId() {
-		return id;
-	}
-
-	public void setId(Long id) {
-		this.id = id;
-	}
+	@Column(name = "user_id")
+	public Long userId;	
 
 	@Column(name = "age")
 	public Integer age;
