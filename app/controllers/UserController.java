@@ -5,6 +5,7 @@ import java.util.Date;
 import javax.persistence.EntityManager;
 
 import play.db.jpa.JPA;
+import play.db.jpa.Transactional;
 import play.libs.Json;
 import play.mvc.BodyParser;
 import play.mvc.Controller;
@@ -30,6 +31,7 @@ public class UserController extends Controller {
 	 * @throws Throwable
 	 */
 	@BodyParser.Of(play.mvc.BodyParser.Json.class)
+	@Transactional
 	public Result authenticate() throws Throwable {
 		final JsonNode json = request().body().asJson();
 		if (json == null)
@@ -68,6 +70,7 @@ public class UserController extends Controller {
 	 * @throws Throwable
 	 */
 	@BodyParser.Of(play.mvc.BodyParser.Json.class)
+	@Transactional
 	public Result create() throws Throwable {
 		final JsonNode json = request().body().asJson();
 		if (json == null)
