@@ -22,9 +22,7 @@ public class RedshiftIdGenerator implements IdentifierGenerator {
 		try {
 
 			PreparedStatement ps = connection
-					.prepareStatement("SELECT MAX(id) as id from "
-							+ domainObj.getClass().getSimpleName()
-									.toLowerCase());
+					.prepareStatement("SELECT MAX(id) as id from users");
 
 			ResultSet rs = ps.executeQuery();
 			if (rs.next()) {
