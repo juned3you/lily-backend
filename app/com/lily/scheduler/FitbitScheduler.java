@@ -18,6 +18,7 @@ import com.lily.actors.FitBitActor;
 import com.lily.models.FitbitUser;
 import com.lily.utils.DateUtils;
 import com.typesafe.config.ConfigFactory;
+
 import scala.concurrent.ExecutionContext.Implicits$;
 
 /**
@@ -64,16 +65,23 @@ public class FitbitScheduler implements Scheduler {
 										.createQuery("From FitbitUser")
 										.getResultList();
 							});
-				} catch (Throwable e) {					
+				} catch (Throwable e) {
 					e.printStackTrace();
 				}
 
 				if (user != null) {
 					user.stream().forEach(
 							usr -> {
-								getSchedulerOnceCancellable(FitBitActor.props,
-										Duration.create(1, TimeUnit.SECONDS),
-										usr);
+								try {
+									Thread.sleep(2000);
+									getSchedulerOnceCancellable(
+											FitBitActor.props, Duration.create(
+													1, TimeUnit.SECONDS), usr);
+								} catch (Exception e) {
+									// TODO Auto-generated catch block
+									e.printStackTrace();
+								}
+
 							});
 				} else
 					Logger.info("No User found in system");
