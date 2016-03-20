@@ -1,6 +1,6 @@
 CREATE TABLE fitbituser
 (
-  id bigint IDENTITY(1,1) NOT NULL,
+  id bigint NOT NULL,
   age int null,
   avatar text null,  
   avatar150 text null,
@@ -31,7 +31,9 @@ CREATE TABLE fitbituser
   water_unit text null,
   water_unit_name text null,
   weight float null,
-  weight_unit text null,
-  user_id bigint not null,  
-  CONSTRAINT  pk_fitbit_id PRIMARY KEY (id)
+  weight_unit text null
+);
+
+CREATE TABLE lilyuser(
+	testfield text null
 );

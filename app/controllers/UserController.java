@@ -11,6 +11,7 @@ import play.mvc.Controller;
 import play.mvc.Result;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.lily.models.LilyUser;
 import com.lily.models.User;
 import com.lily.utils.JpaUtils;
 import com.lily.utils.PasswordHasher;
@@ -99,7 +100,7 @@ public class UserController extends Controller {
 			return badRequest("Email already registered !!.");
 
 		String hashedPassword = PasswordHasher.hash(password);
-		user = new User(firstname, lastname, email, hashedPassword, new Date(),
+		user = new LilyUser(firstname, lastname, email, hashedPassword, new Date(),
 				null);
 		em.persist(user);
 		return ok(Json.toJson(user));

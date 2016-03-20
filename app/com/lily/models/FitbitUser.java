@@ -14,7 +14,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  */
 @Entity
 @Table(name = "fitbituser")
-@PrimaryKeyJoinColumn(name="user_id")
+@PrimaryKeyJoinColumn(name="id")
 public class FitbitUser extends User {
 
 	@Column(name = "age")
