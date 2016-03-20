@@ -24,8 +24,9 @@ public class FitBitActor extends UntypedActor {
 	public void onReceive(Object user) throws Exception {
 		if (!(user instanceof FitbitUser))
 			throw new Exception("Fitbituser param is null in FitBitActor");
+		
 		FitbitUser fitbitUser = (FitbitUser) user;
-		Logger.info("Update occur for fitbit user: " + fitbitUser.encodedId);
+		Logger.info("*********** Actor invoke for fitbit user: " + fitbitUser.encodedId);
 		try {
 			new FitbitService().createUpdateUser(fitbitUser.encodedId);
 		} catch (Throwable t) {
@@ -33,6 +34,8 @@ public class FitBitActor extends UntypedActor {
 					+ t.getMessage());
 			throw new Exception(t);
 		}
-		sender().tell("Success", self());
+		Logger.info("*********** Actor completed for fitbit user: " + fitbitUser.encodedId);
+		//sender().tell("Success", self());
+		context().stop(self());
 	}
 }

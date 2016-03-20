@@ -11,7 +11,6 @@ import org.apache.commons.beanutils.BeanUtils;
 
 import play.Logger;
 import play.db.jpa.JPA;
-import play.db.jpa.Transactional;
 import play.libs.Json;
 
 import com.fasterxml.jackson.core.JsonParseException;
@@ -70,7 +69,6 @@ public class FitbitService {
 	 * @throws JsonMappingException
 	 * @throws IOException
 	 */	
-	@Transactional
 	public String createUpdateUser(String userId) throws FitbitException,
 			JsonParseException, JsonMappingException, IOException {
 

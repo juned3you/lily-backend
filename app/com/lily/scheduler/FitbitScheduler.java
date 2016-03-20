@@ -15,10 +15,10 @@ import akka.actor.Cancellable;
 import akka.actor.Props;
 
 import com.lily.actors.FitBitActor;
-import com.lily.models.Client;
 import com.lily.models.FitbitUser;
 import com.lily.utils.DateUtils;
 import com.typesafe.config.ConfigFactory;
+import scala.concurrent.ExecutionContext.Implicits$;
 
 /**
  * Fitbit scheduler.
@@ -49,25 +49,44 @@ public class FitbitScheduler implements Scheduler {
 		FiniteDuration startDelay = Duration.create(seconds, TimeUnit.SECONDS);
 		FiniteDuration intervalInHours = Duration.create(24, TimeUnit.HOURS);
 
-		// Creating scheduler for per user call.
-		List<FitbitUser> user = null;
-		try {
-			user = JPA.withTransaction(() -> {
-				return (List<FitbitUser>) JPA.em()
-						.createQuery("From FitbitUser").getResultList();
-			});
-		} catch (Throwable e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		Runnable task = new Runnable() {
 
-		if (user != null)
-			user.stream().forEach(
-					usr -> {
-						schedulerList.add(getSchedulerCancellable(
-								FitBitActor.props, startDelay, intervalInHours,
-								usr));
-					});
+			@Override
+			public void run() {
+				Logger.info("Fitbit Scheduler invoked !!!!!!!!!!!!! ");
+				// Creating scheduler for per user call.
+				List<FitbitUser> user = null;
+
+				try {
+					user = JPA
+							.withTransaction(() -> {
+								return (List<FitbitUser>) JPA.em()
+										.createQuery("From FitbitUser")
+										.getResultList();
+							});
+				} catch (Throwable e) {					
+					e.printStackTrace();
+				}
+
+				if (user != null) {
+					user.stream().forEach(
+							usr -> {
+								getSchedulerOnceCancellable(FitBitActor.props,
+										Duration.create(1, TimeUnit.SECONDS),
+										usr);
+							});
+				} else
+					Logger.info("No User found in system");
+
+			}
+		};
+
+		Cancellable scheduler = Akka
+				.system()
+				.scheduler()
+				.schedule(startDelay, intervalInHours, task,
+						Implicits$.MODULE$.global());
+		schedulerList.add(scheduler);
 	}
 
 	/**
@@ -95,6 +114,31 @@ public class FitbitScheduler implements Scheduler {
 			Logger.error("", e);
 		}
 		return null;
+	}
+
+	/**
+	 * Create Cancellable Scheduler.
+	 * 
+	 * @param props
+	 * @param startDelay
+	 * @param interval
+	 * @param msg
+	 * @return
+	 */
+	private void getSchedulerOnceCancellable(Props props,
+			FiniteDuration startDelay, Object msg) {
+		try {
+			ActorRef fitbitActor = Akka.system().actorOf(props);
+			Akka.system()
+					.scheduler()
+					.scheduleOnce(startDelay, fitbitActor, msg,
+							Implicits$.MODULE$.global(), null);
+
+		} catch (IllegalStateException e) {
+			Logger.error("Error caused by reloading application", e);
+		} catch (Exception e) {
+			Logger.error("", e);
+		}
 	}
 
 	@Override
