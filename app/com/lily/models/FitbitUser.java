@@ -13,7 +13,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  * @author Mohammad
  */
 @Entity
-@Table(name = "fitbit_user")
+@Table(name = "fitbituser")
 @PrimaryKeyJoinColumn(name="user_id")
 public class FitbitUser extends User {
 

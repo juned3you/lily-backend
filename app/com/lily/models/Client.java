@@ -7,6 +7,10 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import play.db.jpa.JPA;
+
+import com.lily.utils.JpaUtils;
+
 /**
  * Client for API key and secret.
  * 
@@ -23,8 +27,7 @@ public class Client {
 	public Client(String apiKey, String name, String apiSecret,
 			String redirectUri, String scope, String endpoint,
 			String authorizationUrl, String accessTokenUrl,
-			String refreshTokenUrl,
-			Date createdAt) {
+			String refreshTokenUrl, Date createdAt) {
 		this.apiKey = apiKey;
 		this.name = name;
 		this.apiSecret = apiSecret;
@@ -67,7 +70,15 @@ public class Client {
 
 	@Column(name = "refresh_token_url")
 	public String refreshTokenUrl;
-	
+
 	@Column(name = "created_at")
 	public Date createdAt;
+
+	public static Client getClientByName(String clientName) throws Throwable {
+		return JPA.withTransaction(() -> {
+			return JpaUtils.getSingleResultOrElseNull(
+					JPA.em().createQuery("FROM Client where name = :name")
+							.setParameter("name", clientName), Client.class);
+		});
+	}
 }

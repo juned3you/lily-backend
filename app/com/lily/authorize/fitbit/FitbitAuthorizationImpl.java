@@ -37,6 +37,13 @@ public class FitbitAuthorizationImpl implements Authorization {
 		service = FitbitOAuth2Service
 				.getFitbitOAuth2ServiceInstance(fitbitClient);
 	}
+	
+	public FitbitAuthorizationImpl(String clientName) {
+		fitbitClient = FitbitOAuth2Service.getFitbitClient(clientName);
+		// Create OAuth20Service for FitbitApi
+		service = FitbitOAuth2Service
+				.getFitbitOAuth2ServiceInstance(fitbitClient);
+	}
 
 	/**
 	 * Authenticate using auth code and generating access token for further

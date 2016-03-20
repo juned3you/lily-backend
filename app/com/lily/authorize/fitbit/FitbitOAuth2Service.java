@@ -4,7 +4,6 @@ import java.io.UnsupportedEncodingException;
 import java.util.Base64;
 import java.util.Map;
 
-import play.db.jpa.JPA;
 import play.db.jpa.Transactional;
 
 import com.github.scribejava.core.builder.ServiceBuilder;
@@ -17,7 +16,6 @@ import com.github.scribejava.core.model.OAuthRequest;
 import com.github.scribejava.core.model.Verifier;
 import com.github.scribejava.core.oauth.OAuth20Service;
 import com.lily.models.Client;
-import com.lily.utils.JpaUtils;
 import com.lily.utils.LilyConstants;
 
 /**
@@ -52,14 +50,25 @@ public class FitbitOAuth2Service extends OAuth20Service {
 
 		Client fitbitClient = null;
 		try {
-			fitbitClient = JPA.withTransaction(() -> {
-				return JpaUtils.getSingleResultOrElseNull(
-						JPA.em()
-								.createQuery("FROM Client where name = :name")
-								.setParameter("name",
-										LilyConstants.Fitbit.CLIENT_NAME),
-						Client.class);
-			});
+			fitbitClient = Client.getClientByName(LilyConstants.Fitbit.CLIENT_NAME);
+		} catch (Throwable e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return fitbitClient;
+	}
+	
+	/**
+	 * Get fitbit client from DB.
+	 * 
+	 * @return
+	 */
+	@Transactional
+	public static Client getFitbitClient(String clientName) {
+
+		Client fitbitClient = null;
+		try {
+			fitbitClient = Client.getClientByName(clientName);
 		} catch (Throwable e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -93,14 +102,7 @@ public class FitbitOAuth2Service extends OAuth20Service {
 	public static OAuth20Service getFitbitOAuth2ServiceInstance() {
 		Client fitbitClient = null;
 		try {
-			fitbitClient = JPA.withTransaction(() -> {
-				return JpaUtils.getSingleResultOrElseNull(
-						JPA.em()
-								.createQuery("FROM Client where name = :name")
-								.setParameter("name",
-										LilyConstants.Fitbit.CLIENT_NAME),
-						Client.class);
-			});
+			fitbitClient = Client.getClientByName(LilyConstants.Fitbit.CLIENT_NAME);
 		} catch (Throwable e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

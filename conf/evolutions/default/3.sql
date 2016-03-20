@@ -1,4 +1,4 @@
-CREATE TABLE fitbit_user
+CREATE TABLE fitbituser
 (
   id bigint IDENTITY(1,1) NOT NULL,
   age int null,
