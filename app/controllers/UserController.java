@@ -4,6 +4,8 @@ import java.util.Date;
 
 import javax.persistence.EntityManager;
 
+import org.apache.commons.beanutils.BeanUtils;
+
 import play.db.jpa.JPA;
 import play.db.jpa.Transactional;
 import play.libs.Json;
@@ -12,9 +14,11 @@ import play.mvc.Controller;
 import play.mvc.Result;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.lily.models.FitbitUser;
 import com.lily.models.LilyUser;
 import com.lily.models.User;
 import com.lily.utils.JpaUtils;
+import com.lily.utils.LilyConstants;
 import com.lily.utils.PasswordHasher;
 
 /**
@@ -103,9 +107,31 @@ public class UserController extends Controller {
 			return badRequest("Email already registered !!.");
 
 		String hashedPassword = PasswordHasher.hash(password);
-		user = new LilyUser(firstname, lastname, email, hashedPassword, new Date(),
-				null);
-		em.persist(user);
+
+		final String userType = json.findPath(LilyConstants.USER_TYPE)
+				.textValue();
+
+		// Plain user
+		if (userType == null || userType.trim().length() == 0) {
+			user = new LilyUser(firstname, lastname, email, hashedPassword,
+					new Date(), null);
+			em.persist(user);
+
+			// Fitbit User
+		} else if (LilyConstants.Fitbit.CLIENT_NAME.equals(userType)) {
+			FitbitUser fitbitUser = new FitbitUser();
+			fitbitUser.firstname = firstname;
+			fitbitUser.lastname = lastname;
+			fitbitUser.email = email;
+			fitbitUser.password = hashedPassword;
+			fitbitUser.createdAt = new Date();		
+			fitbitUser.encodedId = json.findPath("userId")
+					.textValue();
+			em.persist(fitbitUser);
+			user = fitbitUser;
+			response().cookies().clear();
+		}
+
 		return ok(Json.toJson(user));
 	}
 }

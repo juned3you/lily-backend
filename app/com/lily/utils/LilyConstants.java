@@ -12,6 +12,8 @@ public interface LilyConstants {
 	String AUTHORIZATION_CODE = "AUTHORIZATION_CODE";
 	String EMAIL_SUFFIX= "@lily.com";
 	String DEFAULT_PASSWORD = "password";
+	String SESSION_KEY_PROFILE = "profile";
+	String USER_TYPE = "userType";
 
 	/**
 	 * Fitbit constants	 

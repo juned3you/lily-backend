@@ -8,11 +8,16 @@ import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.lily.authorize.AuthorizationRequest;
 import com.lily.authorize.fitbit.FitbitException;
 import com.lily.exception.AuthorizationException;
+import com.lily.models.FitbitUser;
 import com.lily.services.FitbitService;
 import com.lily.utils.DateUtils;
+import com.lily.utils.JsonUtils;
+import com.lily.utils.LilyConstants;
+import com.typesafe.config.ConfigFactory;
 
 /**
  * Fitbit controller for Fitbit operations.
@@ -43,10 +48,27 @@ public class FitbitController extends Controller {
 		if (userId == null)
 			throw new AuthorizationException(
 					"User id not found in fitbit response!!");
-		
-		//Register to our db.
-		fitbitService.createUpdateUser(userId);
-		return ok(Json.toJson(userId));
+
+		// Register to our db.
+		// fitbitService.createUpdateUser(userId);
+
+		String response = fitbitService.getDynamicData(userId, "profile");
+
+		JsonNode jsValue = Json.parse(response);
+		JsonNode userNode = jsValue.get("user");
+		if (userNode == null)
+			return badRequest("No user found in profile json response..");
+
+		FitbitUser fitbitUser = JsonUtils.fromJson(userNode, FitbitUser.class);
+
+		response().setCookie("firstname", fitbitUser.getFullName());
+		response().setCookie("lastname", fitbitUser.getFullName());
+		response().setCookie("userId", fitbitUser.getEncodedId());
+		response().setCookie(LilyConstants.USER_TYPE,
+				LilyConstants.Fitbit.CLIENT_NAME);
+
+		return redirect(ConfigFactory.load().getString(
+				"material.ui.callback.url"));
 	}
 
 	/**

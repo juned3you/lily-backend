@@ -27,7 +27,7 @@ public class RedshiftIdGenerator implements IdentifierGenerator {
 			ResultSet rs = ps.executeQuery();
 			if (rs.next()) {
 				Long id = rs.getLong("id");
-				System.out.println("Next Max number-->" + id);
+				//System.out.println("Next Max number-->" + id);
 				if (id == null || id == 0)
 					return new Long(1);
 
