@@ -13,6 +13,7 @@ GET     /assets/*file               		controllers.Assets.versioned(path="/public
 # User Operations
 POST	/user/create						controllers.UserController.create()
 POST	/user/login							controllers.UserController.authenticate()
+POST	/user/linktowearable				controllers.UserController.linktoWearableForExistingUser()
 
 #Oauth2 urls
 GET	/oauth/url/:clientName					controllers.AuthorizationController.getAuthorizationUrl(clientName)

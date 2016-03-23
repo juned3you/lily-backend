@@ -124,14 +124,59 @@ public class UserController extends Controller {
 			fitbitUser.lastname = lastname;
 			fitbitUser.email = email;
 			fitbitUser.password = hashedPassword;
-			fitbitUser.createdAt = new Date();		
-			fitbitUser.encodedId = json.findPath("userId")
-					.textValue();
+			fitbitUser.createdAt = new Date();
+			fitbitUser.encodedId = json.findPath("userId").textValue();
 			em.persist(fitbitUser);
 			user = fitbitUser;
 			response().cookies().clear();
 		}
 
 		return ok(Json.toJson(user));
+	}
+
+	/**
+	 * Create new user.
+	 * 
+	 * @return
+	 * @throws Throwable
+	 */
+	@BodyParser.Of(play.mvc.BodyParser.Json.class)
+	@Transactional
+	public Result linktoWearableForExistingUser() throws Throwable {
+		final JsonNode json = request().body().asJson();
+		final String email = json.findPath("email").textValue();
+		
+		if (email == null)
+			return badRequest("Missing parameter [email]");
+
+		EntityManager em = JPA.em();
+
+		User user = JPA.withTransaction(() -> {
+			return JpaUtils.getSingleResultOrElseNull(
+					em.createQuery("FROM User where email = '" + email + "'"),
+					User.class);
+		});
+
+		final String userType = json.findPath(LilyConstants.USER_TYPE)
+				.textValue();
+
+		FitbitUser fitbitUser = null;
+		if (userType == null || userType.trim().length() == 0) 
+			return badRequest("User type is missing in request..");
+			// Fitbit User
+		 if (LilyConstants.Fitbit.CLIENT_NAME.equals(userType)) {
+			fitbitUser = new FitbitUser();
+			fitbitUser.firstname = user.firstname;
+			fitbitUser.lastname = user.lastname;
+			fitbitUser.email = email;
+			fitbitUser.password = user.password;
+			fitbitUser.createdAt = new Date();
+			fitbitUser.encodedId = json.findPath("userId").textValue();
+			em.remove(user);
+			em.persist(fitbitUser);
+			response().cookies().clear();
+		}
+
+		return ok(Json.toJson(fitbitUser));
 	}
 }
