@@ -119,13 +119,24 @@ public class UserController extends Controller {
 
 			// Fitbit User
 		} else if (LilyConstants.Fitbit.CLIENT_NAME.equals(userType)) {
+			String userId = json.findPath("userId").textValue();
+			
+			FitbitUser existingUser = JPA.withTransaction(() -> {
+				return JpaUtils.getSingleResultOrElseNull(
+						em.createQuery("FROM FitbitUser where encodedId = '" + userId + "'"),
+						FitbitUser.class);
+			});
+			
+			if(existingUser != null)
+				return badRequest(userId + " is already link with another user !!.");
+			
 			FitbitUser fitbitUser = new FitbitUser();
 			fitbitUser.firstname = firstname;
 			fitbitUser.lastname = lastname;
 			fitbitUser.email = email;
 			fitbitUser.password = hashedPassword;
 			fitbitUser.createdAt = new Date();
-			fitbitUser.encodedId = json.findPath("userId").textValue();
+			fitbitUser.encodedId = userId;
 			em.persist(fitbitUser);
 			user = fitbitUser;
 			response().cookies().clear();
