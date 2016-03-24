@@ -1,11 +1,12 @@
-import com.lily.scheduler.JobScheduler;
-
 import play.Application;
 import play.GlobalSettings;
 import play.libs.F.Promise;
 import play.mvc.Action;
 import play.mvc.Http;
 import play.mvc.Result;
+
+import com.lily.mongo.utils.MorphiaPlugin;
+import com.lily.scheduler.JobScheduler;
 
 /**
  * Configuration for the project.
@@ -14,6 +15,8 @@ import play.mvc.Result;
  *
  */
 public class Global extends GlobalSettings {
+
+	private MorphiaPlugin morphiaPlugin;
 
 	private class ActionWrapper extends Action.Simple {
 		public ActionWrapper(Action<?> action) {
@@ -39,10 +42,13 @@ public class Global extends GlobalSettings {
 	@Override
 	public void onStart(Application arg0) {
 		JobScheduler.scheduleJobs();
+		morphiaPlugin = new MorphiaPlugin(arg0);
+		morphiaPlugin.onStart();
 	}
 
 	@Override
 	public void onStop(Application arg0) {
 		JobScheduler.stopJobs();
+		morphiaPlugin.onStop();
 	}
 }

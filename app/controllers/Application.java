@@ -1,5 +1,7 @@
 package controllers;
 
+import com.lily.mongo.models.Activity;
+
 import play.mvc.Controller;
 import play.mvc.Result;
 import views.html.*;
@@ -11,6 +13,13 @@ public class Application extends Controller {
 	
     public Result index() throws Exception {
     	//fitbitService.createUpdateUser("4CMMSH");
+    	
+    	Activity activity = new Activity();
+    	activity.displayName = "test";
+    	
+    	activity.insert();
+    	
+    	Activity.find().all().forEach(x -> System.out.println(x.id));
         return ok(index.render("Your new application is ready."));
     }
     
