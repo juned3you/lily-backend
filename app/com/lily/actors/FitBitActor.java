@@ -8,11 +8,14 @@ import akka.actor.UntypedActor;
 
 import com.lily.authorize.fitbit.extractor.FitbitExtractor;
 import com.lily.authorize.fitbit.loader.SleepLogLoader;
+import com.lily.authorize.fitbit.loader.SleepTimeSeriesLoader;
 import com.lily.authorize.fitbit.transformer.SleepLogTransformer;
+import com.lily.authorize.fitbit.transformer.SleepTimeSeriesTransformer;
 import com.lily.extractor.ExtractorRequest;
 import com.lily.extractor.ExtractorResponse;
 import com.lily.models.FitbitUser;
 import com.lily.utils.DateUtils;
+import com.lily.utils.EnumSleep;
 
 /**
  * Akka Fitbit actor.
@@ -40,8 +43,8 @@ public class FitBitActor extends UntypedActor {
 		 * fitbitUser.encodedId + "-> " + t.getMessage()); throw new
 		 * Exception(t); }
 		 */
-		
-		//Sleep Log
+
+		// Sleep Log
 		loadSleepLog(fitbitUser);
 
 		Logger.info("*********** Actor completed for fitbit user: "
@@ -52,6 +55,7 @@ public class FitBitActor extends UntypedActor {
 
 	/**
 	 * Load Sleep log into Mongo for last day date.
+	 * 
 	 * @param fitbitUser
 	 */
 	private void loadSleepLog(FitbitUser fitbitUser) {
@@ -78,6 +82,41 @@ public class FitBitActor extends UntypedActor {
 
 		} catch (Throwable t) {
 			Logger.error("Error updating Sleep log for user: "
+					+ fitbitUser.encodedId + "-> " + t.getMessage());
+		}
+	}
+
+	/**
+	 * Load Sleep log into Mongo for last day date.
+	 * 
+	 * @param fitbitUser
+	 */
+	public static void loadSleepTimeSeries(FitbitUser fitbitUser) {
+		try {
+			Date lastDayDate = DateUtils.getLastDayDate();
+			String dateString = DateUtils.formatDate(lastDayDate);
+
+			for (EnumSleep es : EnumSleep.values()) {
+				ExtractorRequest sleepRequest = new ExtractorRequest(
+						fitbitUser.encodedId, es.getUri() + "/date/"
+								+ dateString + "/today");
+				// Extract from fitbit
+				ExtractorResponse response = new FitbitExtractor()
+						.extract(sleepRequest);
+				response.setUri(es.getUri());
+				response.setUserId(fitbitUser.encodedId);
+
+				// Transform into model.
+				Object transformResponse = new SleepTimeSeriesTransformer()
+						.transform(response);
+
+				// Load in mongo db.
+				new SleepTimeSeriesLoader().load(transformResponse);
+
+			}
+
+		} catch (Throwable t) {
+			Logger.error("Error updating Sleep Time Series  for user: "
 					+ fitbitUser.encodedId + "-> " + t.getMessage());
 		}
 	}

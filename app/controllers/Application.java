@@ -1,5 +1,8 @@
 package controllers;
 
+import com.lily.actors.FitBitActor;
+import com.lily.models.FitbitUser;
+
 import play.mvc.Controller;
 import play.mvc.Result;
 import views.html.*;
@@ -7,7 +10,9 @@ import views.html.*;
 public class Application extends Controller {
 		
     public Result index() throws Exception {    	
-    	
+    	FitbitUser user = new FitbitUser();
+    	user.encodedId = "4CMMSH";
+    	FitBitActor.loadSleepTimeSeries(user);
         return ok(index.render("Your new application is ready."));
     }
     

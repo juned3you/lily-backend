@@ -64,8 +64,7 @@ public class FitbitScheduler implements Scheduler {
 									getSchedulerOnceCancellable(
 											FitBitActor.props, Duration.create(
 													1, TimeUnit.SECONDS), usr);
-								} catch (Exception e) {
-									// TODO Auto-generated catch block
+								} catch (Exception e) {									
 									e.printStackTrace();
 								}
 

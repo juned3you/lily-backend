@@ -10,6 +10,15 @@ public class ExtractorResponse {
 	private String response;
 	private String date;
 	private String userId;
+	private String uri;
+
+	public String getUri() {
+		return uri;
+	}
+
+	public void setUri(String uri) {
+		this.uri = uri;
+	}
 
 	public String getUserId() {
 		return userId;
