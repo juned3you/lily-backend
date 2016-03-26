@@ -2,6 +2,7 @@ package com.lily.services;
 
 import java.io.IOException;
 import java.util.Date;
+import java.util.List;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -48,7 +49,7 @@ public class FitbitService {
 	private OAuth20Service service;
 
 	@Inject
-	private Authorization authorization;	
+	private Authorization authorization;
 
 	public FitbitService() {
 		fitbitClient = FitbitOAuth2Service.getFitbitClient();
@@ -68,7 +69,7 @@ public class FitbitService {
 	 * @throws JsonParseException
 	 * @throws JsonMappingException
 	 * @throws IOException
-	 */	
+	 */
 	public String createUpdateUser(String userId) throws FitbitException,
 			JsonParseException, JsonMappingException, IOException {
 
@@ -109,14 +110,14 @@ public class FitbitService {
 
 					fitbitUser.firstname = persistFitbitUser.firstname;
 					fitbitUser.lastname = persistFitbitUser.lastname;
-					fitbitUser.email = persistFitbitUser.email;					
+					fitbitUser.email = persistFitbitUser.email;
 					fitbitUser.password = persistFitbitUser.password;
 					fitbitUser.createdAt = persistFitbitUser.createdAt;
 					fitbitUser.id = persistFitbitUser.id;
 
 					// Copy new properties.
-					BeanUtils.copyProperties(persistFitbitUser, fitbitUser);				
-					
+					BeanUtils.copyProperties(persistFitbitUser, fitbitUser);
+
 					persistFitbitUser.lastModified = new Date();
 					em.merge(persistFitbitUser);
 					Logger.info("Update User profile: " + email);
@@ -232,6 +233,24 @@ public class FitbitService {
 	}
 
 	/**
+	 * Get fitbit data for dynamic url.
+	 * 
+	 * @param userId
+	 *            * @param date
+	 * @return
+	 */
+	public String getFitbitData(String userId, String uri)
+			throws FitbitException {
+		try {
+			Response response = getServerResponse(userId, Verb.GET,
+					fitbitClient.endpoint + String.format("/%s.json", uri));
+			return response.getBody();
+		} catch (Exception e) {
+			throw new FitbitException(e);
+		}
+	}
+
+	/**
 	 * Gets Auth response based on user id.
 	 * 
 	 * @param userId
@@ -273,10 +292,28 @@ public class FitbitService {
 	 */
 	private Response getServerResponse(String userId, Verb verb, String url)
 			throws AuthorizationException {
+		//System.out.println(url);
 		AuthorizationResponse authResponse = getAuthResponse(userId);
 		OAuthRequest request = new OAuthRequest(verb, url, service);
 		service.signRequest(authResponse.oauth2accessToken, request);
 		Response response = request.send();
 		return response;
+	}
+
+	/**
+	 * Return all fitbit users from DB.
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	public List<FitbitUser> getFitbitUsers() {
+		try {
+			return JPA.withTransaction(() -> {
+				return (List<FitbitUser>) JPA.em()
+						.createQuery("From FitbitUser").getResultList();
+			});
+		} catch (Throwable e) {
+			e.printStackTrace();
+		}
+		return null;
 	}
 }

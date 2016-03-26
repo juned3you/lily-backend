@@ -179,5 +179,25 @@ public class FitbitController extends Controller {
 
 		return ok(response);
 	}
+	
+	/**
+	 * Compose dynamic route
+	 * 
+	 * @return
+	 * @throws AuthorizationException
+	 */
+	public Result dynamicRouteWithoutUser(String userId, String uri) {
+		if (userId == null || uri == null)
+			return badRequest("No userId or uri found in request !!");
+
+		String response = null;
+		try {
+			response = fitbitService.getFitbitData(userId, uri);
+		} catch (FitbitException e) {
+			return badRequest(e.getMessage());
+		}
+
+		return ok(response);
+	}
 
 }

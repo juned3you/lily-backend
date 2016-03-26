@@ -5,9 +5,9 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import play.Logger;
-import play.db.jpa.JPA;
 import play.db.jpa.Transactional;
 import play.libs.Akka;
+import scala.concurrent.ExecutionContext.Implicits$;
 import scala.concurrent.duration.Duration;
 import scala.concurrent.duration.FiniteDuration;
 import akka.actor.ActorRef;
@@ -16,10 +16,9 @@ import akka.actor.Props;
 
 import com.lily.actors.FitBitActor;
 import com.lily.models.FitbitUser;
+import com.lily.services.FitbitService;
 import com.lily.utils.DateUtils;
 import com.typesafe.config.ConfigFactory;
-
-import scala.concurrent.ExecutionContext.Implicits$;
 
 /**
  * Fitbit scheduler.
@@ -33,8 +32,7 @@ public class FitbitScheduler implements Scheduler {
 
 	/**
 	 * Schedule multiple jobs using Actors.
-	 */
-	@SuppressWarnings("unchecked")
+	 */	
 	@Override
 	@Transactional
 	public void schedule() {
@@ -56,18 +54,7 @@ public class FitbitScheduler implements Scheduler {
 			public void run() {
 				Logger.info("Fitbit Scheduler invoked !!!!!!!!!!!!! ");
 				// Creating scheduler for per user call.
-				List<FitbitUser> user = null;
-
-				try {
-					user = JPA
-							.withTransaction(() -> {
-								return (List<FitbitUser>) JPA.em()
-										.createQuery("From FitbitUser")
-										.getResultList();
-							});
-				} catch (Throwable e) {
-					e.printStackTrace();
-				}
+				List<FitbitUser> user = new FitbitService().getFitbitUsers();
 
 				if (user != null) {
 					user.stream().forEach(
@@ -106,7 +93,7 @@ public class FitbitScheduler implements Scheduler {
 	 * @param msg
 	 * @return
 	 */
-	private Cancellable getSchedulerCancellable(Props props,
+	protected Cancellable getSchedulerCancellable(Props props,
 			FiniteDuration startDelay, FiniteDuration interval, Object msg) {
 		try {
 			ActorRef fitbitActor = Akka.system().actorOf(props);

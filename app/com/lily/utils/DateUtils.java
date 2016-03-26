@@ -3,6 +3,7 @@ package com.lily.utils;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
 
@@ -19,6 +20,8 @@ import com.typesafe.config.ConfigFactory;
  */
 public class DateUtils {
 
+	private static DateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+	
 	/**
 	 * Format date.
 	 * 
@@ -26,9 +29,19 @@ public class DateUtils {
 	 * @return
 	 * @throws ParseException
 	 */
-	public static Date formatDate(String date) throws ParseException {
-		DateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+	public static Date formatDate(String date) throws ParseException {		
 		return simpleDateFormat.parse(date);
+	}
+	
+	/**
+	 * Format date.
+	 * 
+	 * @param date
+	 * @return
+	 * @throws ParseException
+	 */
+	public static String formatDate(Date date) throws ParseException {		
+		return simpleDateFormat.format(date);
 	}
 
 	/**
@@ -43,6 +56,12 @@ public class DateUtils {
 			throws ParseException {
 		DateFormat simpleDateFormat = new SimpleDateFormat(format);
 		return simpleDateFormat.parse(date);
+	}
+
+	public static Date getLastDayDate() {
+		Calendar cal = Calendar.getInstance();
+		cal.add(Calendar.DATE, -1);
+		return cal.getTime();
 	}
 
 	/**

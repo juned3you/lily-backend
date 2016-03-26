@@ -25,3 +25,4 @@ GET		/fitbit/user/profile/:userId				controllers.FitbitController.getUserProfile
 #GET	/fitbit/user/:userId/sleep/date/:date		controllers.FitbitController.getSleep(userId, date)
 #GET	/fitbit/user/:userId/sleep/goal				controllers.FitbitController.getSleepGoal(userId)
 GET		/fitbit/user/:userId/*uri					controllers.FitbitController.dynamicRouteWithUser(userId, uri)
+GET		/fitbit/dynamic/:userId/*uri				controllers.FitbitController.dynamicRouteWithoutUser(userId, uri)

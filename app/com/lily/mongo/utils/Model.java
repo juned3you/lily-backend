@@ -3,7 +3,9 @@ package com.lily.mongo.utils;
 import java.util.List;
 
 import org.mongodb.morphia.mapping.Mapper;
+import org.mongodb.morphia.query.Query;
 import org.mongodb.morphia.query.QueryImpl;
+
 import static com.lily.mongo.utils.MorphiaPlugin.ds;
 
 public class Model {
@@ -53,6 +55,18 @@ public class Model {
 
 	public void delete() {
 		ds().delete(this);
+	}
+
+	public static <T> void insertAll(List<T> list) {
+		ds().save(list);
+	}
+
+	public static <T> void deleteAll(Query<T> query) {
+		ds().delete(query);
+	}
+
+	public static <T> Query<T> q(Class<T> type) {
+		return ds().createQuery(type);
 	}
 
 	@SuppressWarnings("unchecked")
