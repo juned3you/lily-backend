@@ -46,6 +46,9 @@ public class FitBitActor extends UntypedActor {
 
 		// Sleep Log
 		loadSleepLog(fitbitUser);
+		
+		// Sleep time series
+		loadSleepTimeSeries(fitbitUser);
 
 		Logger.info("*********** Actor completed for fitbit user: "
 				+ fitbitUser.encodedId);
