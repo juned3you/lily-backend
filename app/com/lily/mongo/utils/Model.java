@@ -68,6 +68,11 @@ public class Model {
 	public static <T> Query<T> q(Class<T> type) {
 		return ds().createQuery(type);
 	}
+	
+	@SuppressWarnings("rawtypes")
+	public Query q() {
+		return ds().createQuery(this.getClass());
+	}
 
 	@SuppressWarnings("unchecked")
 	public <T extends Model> T refresh() {

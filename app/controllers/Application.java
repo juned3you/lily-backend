@@ -12,7 +12,7 @@ public class Application extends Controller {
     public Result index() throws Exception {    	
     	FitbitUser user = new FitbitUser();
     	user.encodedId = "4CMMSH";
-    	//FitBitActor.loadSleepTimeSeries(user);
+    	//FitBitActor.loadDailyActivities(user);
         return ok(index.render("Your new application is ready."));
     }
     

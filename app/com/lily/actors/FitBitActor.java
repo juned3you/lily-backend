@@ -7,8 +7,10 @@ import akka.actor.Props;
 import akka.actor.UntypedActor;
 
 import com.lily.authorize.fitbit.extractor.FitbitExtractor;
+import com.lily.authorize.fitbit.loader.DailyActivitiesLoader;
 import com.lily.authorize.fitbit.loader.SleepLogLoader;
 import com.lily.authorize.fitbit.loader.SleepTimeSeriesLoader;
+import com.lily.authorize.fitbit.transformer.DailyActivitiesTransformer;
 import com.lily.authorize.fitbit.transformer.SleepLogTransformer;
 import com.lily.authorize.fitbit.transformer.SleepTimeSeriesTransformer;
 import com.lily.extractor.ExtractorRequest;
@@ -46,9 +48,12 @@ public class FitBitActor extends UntypedActor {
 
 		// Sleep Log
 		loadSleepLog(fitbitUser);
-		
+
 		// Sleep time series
 		loadSleepTimeSeries(fitbitUser);
+		
+		//Daily Log
+		loadDailyActivities(fitbitUser);
 
 		Logger.info("*********** Actor completed for fitbit user: "
 				+ fitbitUser.encodedId);
@@ -83,9 +88,13 @@ public class FitBitActor extends UntypedActor {
 			// Load in mongo db.
 			new SleepLogLoader().load(transformResponse);
 
+			Logger.info("SleepLog for yesterday has been inserted successfully for user: "
+					+ fitbitUser.encodedId);
+
 		} catch (Throwable t) {
 			Logger.error("Error updating Sleep log for user: "
 					+ fitbitUser.encodedId + "-> " + t.getMessage());
+			t.printStackTrace();
 		}
 	}
 
@@ -115,12 +124,49 @@ public class FitBitActor extends UntypedActor {
 
 				// Load in mongo db.
 				new SleepTimeSeriesLoader().load(transformResponse);
-
 			}
+
+			Logger.info("SleepTimeSeries for yesterday has been inserted successfully for user: "
+					+ fitbitUser.encodedId);
 
 		} catch (Throwable t) {
 			Logger.error("Error updating Sleep Time Series  for user: "
 					+ fitbitUser.encodedId + "-> " + t.getMessage());
+			t.printStackTrace();
+		}
+	}
+
+	/**
+	 * Load Daily activities into Mongo for last day date.
+	 * 
+	 * @param fitbitUser
+	 */
+	public static void loadDailyActivities(FitbitUser fitbitUser) {
+		try {
+			Date lastDayDate = DateUtils.getLastDayDate();
+			String dateString = DateUtils.formatDate(lastDayDate);//"2016-03-02";
+
+			ExtractorRequest sleepRequest = new ExtractorRequest(
+					fitbitUser.encodedId, "activities/date/" + dateString);
+			// Extract from fitbit
+			ExtractorResponse response = new FitbitExtractor()
+					.extract(sleepRequest);
+			response.setUserId(fitbitUser.encodedId);
+			response.setDate(dateString);
+
+			// Transform into model.
+			Object transformResponse = new DailyActivitiesTransformer()
+					.transform(response);
+
+			// Load in mongo db.
+			new DailyActivitiesLoader().load(transformResponse);
+			Logger.info("DailyActivity for yesterday has been inserted successfully for user: "
+					+ fitbitUser.encodedId);
+
+		} catch (Throwable t) {
+			Logger.error("Error updating Daily activities  for user: "
+					+ fitbitUser.encodedId + "-> " + t.getMessage());
+			t.printStackTrace();
 		}
 	}
 }
