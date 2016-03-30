@@ -2,9 +2,8 @@ package controllers;
 
 import java.util.Date;
 
+import javax.inject.Inject;
 import javax.persistence.EntityManager;
-
-import org.apache.commons.beanutils.BeanUtils;
 
 import play.db.jpa.JPA;
 import play.db.jpa.Transactional;
@@ -17,6 +16,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.lily.models.FitbitUser;
 import com.lily.models.LilyUser;
 import com.lily.models.User;
+import com.lily.services.FitbitService;
 import com.lily.utils.JpaUtils;
 import com.lily.utils.LilyConstants;
 import com.lily.utils.PasswordHasher;
@@ -27,6 +27,9 @@ import com.lily.utils.PasswordHasher;
  * @author Mohammad
  */
 public class UserController extends Controller {
+
+	@Inject
+	private FitbitService fitbitService;
 
 	/**
 	 * Check User login.
@@ -120,17 +123,16 @@ public class UserController extends Controller {
 			// Fitbit User
 		} else if (LilyConstants.Fitbit.CLIENT_NAME.equals(userType)) {
 			String userId = json.findPath("userId").textValue();
-			
-			FitbitUser existingUser = JPA.withTransaction(() -> {
-				return JpaUtils.getSingleResultOrElseNull(
-						em.createQuery("FROM FitbitUser where encodedId = '" + userId + "'"),
-						FitbitUser.class);
-			});
-			
-			if(existingUser != null)
-				return badRequest(userId + " is already link with another user !!.");
-			
-			FitbitUser fitbitUser = new FitbitUser();
+
+			FitbitUser existingUser = fitbitService.getFitbitUser(userId);
+
+			if (existingUser != null)
+				return badRequest(userId
+						+ " is already link with another user !!.");
+
+			// Register new user.
+			FitbitUser fitbitUser = fitbitService.getUserFromServer(userId);		
+
 			fitbitUser.firstname = firstname;
 			fitbitUser.lastname = lastname;
 			fitbitUser.email = email;
@@ -156,7 +158,7 @@ public class UserController extends Controller {
 	public Result linktoWearableForExistingUser() throws Throwable {
 		final JsonNode json = request().body().asJson();
 		final String email = json.findPath("email").textValue();
-		
+
 		if (email == null)
 			return badRequest("Missing parameter [email]");
 
@@ -172,10 +174,10 @@ public class UserController extends Controller {
 				.textValue();
 
 		FitbitUser fitbitUser = null;
-		if (userType == null || userType.trim().length() == 0) 
+		if (userType == null || userType.trim().length() == 0)
 			return badRequest("User type is missing in request..");
-			// Fitbit User
-		 if (LilyConstants.Fitbit.CLIENT_NAME.equals(userType)) {
+		// Fitbit User
+		if (LilyConstants.Fitbit.CLIENT_NAME.equals(userType)) {
 			fitbitUser = new FitbitUser();
 			fitbitUser.firstname = user.firstname;
 			fitbitUser.lastname = user.lastname;

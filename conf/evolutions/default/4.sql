@@ -1,0 +1,1 @@
+ALTER TABLE fitbituser ADD COLUMN is_sync boolean null;

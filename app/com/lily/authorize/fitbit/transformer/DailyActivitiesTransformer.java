@@ -21,7 +21,7 @@ public class DailyActivitiesTransformer implements Transformer {
 	@Override
 	public Object transform(Object obj) throws TransformerException {
 		ExtractorResponse exResponse = (ExtractorResponse) obj;
-		try {
+		try {			
 			JsonNode jsValue = Json.parse(exResponse.getResponse());
 			DailyActivity dailyActivity = JsonUtils.fromJson(jsValue,
 					DailyActivity.class);
@@ -29,6 +29,7 @@ public class DailyActivitiesTransformer implements Transformer {
 			dailyActivity.date = DateUtils.formatDate(exResponse.getDate());
 			return dailyActivity;
 		} catch (Throwable e) {
+			System.out.println(exResponse.getResponse());
 			throw new TransformerException(e);
 		}
 	}

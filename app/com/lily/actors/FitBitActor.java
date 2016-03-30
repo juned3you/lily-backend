@@ -1,8 +1,14 @@
 package com.lily.actors;
 
+import java.text.ParseException;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
+
+import org.apache.commons.beanutils.BeanUtils;
 
 import play.Logger;
+import play.db.jpa.JPA;
 import akka.actor.Props;
 import akka.actor.UntypedActor;
 
@@ -16,6 +22,7 @@ import com.lily.authorize.fitbit.transformer.SleepTimeSeriesTransformer;
 import com.lily.extractor.ExtractorRequest;
 import com.lily.extractor.ExtractorResponse;
 import com.lily.models.FitbitUser;
+import com.lily.services.FitbitService;
 import com.lily.utils.DateUtils;
 import com.lily.utils.EnumSleep;
 
@@ -39,26 +46,61 @@ public class FitBitActor extends UntypedActor {
 		FitbitUser fitbitUser = (FitbitUser) user;
 		Logger.info("*********** Actor invoke for fitbit user: "
 				+ fitbitUser.encodedId);
-		/*
-		 * try { new FitbitService().createUpdateUser(fitbitUser.encodedId); }
-		 * catch (Throwable t) { Logger.error("Error updating user: " +
-		 * fitbitUser.encodedId + "-> " + t.getMessage()); throw new
-		 * Exception(t); }
-		 */
+
+		// Update User
+		updateUser(fitbitUser);
 
 		// Sleep Log
 		loadSleepLog(fitbitUser);
 
 		// Sleep time series
 		loadSleepTimeSeries(fitbitUser);
-		
-		//Daily Log
+
+		// Daily Log
 		loadDailyActivities(fitbitUser);
+
+		// updating sync flag.
+		fitbitUser.isSync = true;
+		JPA.withTransaction(() -> {
+			JPA.em().merge(fitbitUser);
+		});
 
 		Logger.info("*********** Actor completed for fitbit user: "
 				+ fitbitUser.encodedId);
 		// sender().tell("Success", self());
 		context().stop(self());
+	}
+
+	/**
+	 * Update User.
+	 * 
+	 * @param persistFitbitUser
+	 */
+	private void updateUser(FitbitUser persistFitbitUser) {
+		try {
+			FitbitUser fitbitUserProfile = new FitbitService()
+					.getUserFromServer(persistFitbitUser.encodedId);
+			fitbitUserProfile.firstname = persistFitbitUser.firstname;
+			fitbitUserProfile.lastname = persistFitbitUser.lastname;
+			fitbitUserProfile.email = persistFitbitUser.email;
+			fitbitUserProfile.password = persistFitbitUser.password;
+			fitbitUserProfile.createdAt = persistFitbitUser.createdAt;
+			fitbitUserProfile.id = persistFitbitUser.id;
+			fitbitUserProfile.isSync = persistFitbitUser.isSync;
+
+			// Copy new properties.
+			BeanUtils.copyProperties(persistFitbitUser, fitbitUserProfile);
+
+			persistFitbitUser.lastModified = new Date();
+			JPA.withTransaction(() -> {
+				JPA.em().merge(persistFitbitUser);
+			});
+
+		} catch (Throwable t) {
+			Logger.error("Error updating user profile: "
+					+ persistFitbitUser.encodedId + "-> " + t.getMessage());
+		}
+
 	}
 
 	/**
@@ -69,27 +111,34 @@ public class FitBitActor extends UntypedActor {
 	private void loadSleepLog(FitbitUser fitbitUser) {
 		// Sleep Log
 		try {
-			Date lastDayDate = DateUtils.getLastDayDate();
-			String dateString = DateUtils.formatDate(lastDayDate);
+			Date startDate = DateUtils.formatDate(getStartDate(fitbitUser));
+			Date endDate = new Date();
 
-			ExtractorRequest sleepRequest = new ExtractorRequest(
-					fitbitUser.encodedId, "sleep/date/" + dateString);
+			GregorianCalendar gcal = new GregorianCalendar();
+			gcal.setTime(startDate);
+			while (!gcal.getTime().after(endDate)) {
+				String dateString = DateUtils.formatDate(gcal.getTime());
+				ExtractorRequest sleepRequest = new ExtractorRequest(
+						fitbitUser.encodedId, "sleep/date/" + dateString);
 
-			// Extract from fitbit
-			ExtractorResponse response = new FitbitExtractor()
-					.extract(sleepRequest);
-			response.setDate(dateString);
-			response.setUserId(fitbitUser.encodedId);
+				// Extract from fitbit
+				ExtractorResponse response = new FitbitExtractor()
+						.extract(sleepRequest);
+				response.setDate(dateString);
+				response.setUserId(fitbitUser.encodedId);
 
-			// Transform into model.
-			Object transformResponse = new SleepLogTransformer()
-					.transform(response);
+				// Transform into model.
+				Object transformResponse = new SleepLogTransformer()
+						.transform(response);
 
-			// Load in mongo db.
-			new SleepLogLoader().load(transformResponse);
+				// Load in mongo db.
+				new SleepLogLoader().load(transformResponse);
 
-			Logger.info("SleepLog for yesterday has been inserted successfully for user: "
-					+ fitbitUser.encodedId);
+				Logger.info("SleepLog for date " + dateString
+						+ " has been inserted successfully for user: "
+						+ fitbitUser.encodedId);
+				gcal.add(Calendar.DATE, 1);
+			}
 
 		} catch (Throwable t) {
 			Logger.error("Error updating Sleep log for user: "
@@ -103,10 +152,11 @@ public class FitBitActor extends UntypedActor {
 	 * 
 	 * @param fitbitUser
 	 */
-	public static void loadSleepTimeSeries(FitbitUser fitbitUser) {
+	public void loadSleepTimeSeries(FitbitUser fitbitUser) {
+		// Sleep Log
+		String dateString = "";
 		try {
-			Date lastDayDate = DateUtils.getLastDayDate();
-			String dateString = DateUtils.formatDate(lastDayDate);
+			dateString = getStartDate(fitbitUser);
 
 			for (EnumSleep es : EnumSleep.values()) {
 				ExtractorRequest sleepRequest = new ExtractorRequest(
@@ -126,7 +176,8 @@ public class FitBitActor extends UntypedActor {
 				new SleepTimeSeriesLoader().load(transformResponse);
 			}
 
-			Logger.info("SleepTimeSeries for yesterday has been inserted successfully for user: "
+			Logger.info("SleepTimeSeries for date " + dateString
+					+ " to today has been inserted successfully for user: "
 					+ fitbitUser.encodedId);
 
 		} catch (Throwable t) {
@@ -141,32 +192,58 @@ public class FitBitActor extends UntypedActor {
 	 * 
 	 * @param fitbitUser
 	 */
-	public static void loadDailyActivities(FitbitUser fitbitUser) {
+	public void loadDailyActivities(FitbitUser fitbitUser) {
+		// Sleep Log
+		String dateString = "";
 		try {
-			Date lastDayDate = DateUtils.getLastDayDate();
-			String dateString = DateUtils.formatDate(lastDayDate);//"2016-03-02";
+			Date startDate = DateUtils.formatDate(getStartDate(fitbitUser));
+			Date endDate = new Date();
 
-			ExtractorRequest sleepRequest = new ExtractorRequest(
-					fitbitUser.encodedId, "activities/date/" + dateString);
-			// Extract from fitbit
-			ExtractorResponse response = new FitbitExtractor()
-					.extract(sleepRequest);
-			response.setUserId(fitbitUser.encodedId);
-			response.setDate(dateString);
+			GregorianCalendar gcal = new GregorianCalendar();
+			gcal.setTime(startDate);
+			while (!gcal.getTime().after(endDate)) {
+				dateString = DateUtils.formatDate(gcal.getTime());
 
-			// Transform into model.
-			Object transformResponse = new DailyActivitiesTransformer()
-					.transform(response);
+				ExtractorRequest sleepRequest = new ExtractorRequest(
+						fitbitUser.encodedId, "activities/date/" + dateString);
+				// Extract from fitbit
+				ExtractorResponse response = new FitbitExtractor()
+						.extract(sleepRequest);
+				response.setUserId(fitbitUser.encodedId);
+				response.setDate(dateString);
 
-			// Load in mongo db.
-			new DailyActivitiesLoader().load(transformResponse);
-			Logger.info("DailyActivity for yesterday has been inserted successfully for user: "
-					+ fitbitUser.encodedId);
+				// Transform into model.
+				Object transformResponse = new DailyActivitiesTransformer()
+						.transform(response);
 
+				// Load in mongo db.
+				new DailyActivitiesLoader().load(transformResponse);
+				Logger.info("DailyActivity for date " + dateString
+						+ " has been inserted successfully for user: "
+						+ fitbitUser.encodedId);
+
+				gcal.add(Calendar.DATE, 1);
+			}
 		} catch (Throwable t) {
 			Logger.error("Error updating Daily activities  for user: "
 					+ fitbitUser.encodedId + "-> " + t.getMessage());
 			t.printStackTrace();
 		}
+	}
+
+	/**
+	 * Get Start date based on isSync flag.
+	 * 
+	 * @param fitbitUser
+	 * @return
+	 * @throws ParseException
+	 */
+	private String getStartDate(FitbitUser fitbitUser) throws ParseException {
+		if (fitbitUser.isSync == null || fitbitUser.isSync == false) {
+			return fitbitUser.memberSince;
+		}
+		Date lastDayDate = DateUtils.getLastDayDate();
+		String dateString = DateUtils.formatDate(lastDayDate);
+		return dateString;
 	}
 }

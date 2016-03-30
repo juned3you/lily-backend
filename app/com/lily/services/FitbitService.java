@@ -1,6 +1,5 @@
 package com.lily.services;
 
-import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 
@@ -14,8 +13,6 @@ import play.Logger;
 import play.db.jpa.JPA;
 import play.libs.Json;
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.github.scribejava.core.model.OAuthRequest;
 import com.github.scribejava.core.model.Response;
@@ -65,22 +62,10 @@ public class FitbitService {
 	 * 
 	 * @param userId
 	 * @return
-	 * @throws FitbitException
-	 * @throws JsonParseException
-	 * @throws JsonMappingException
-	 * @throws IOException
+	 * @throws Exception 
 	 */
-	public String createUpdateUser(String userId) throws FitbitException,
-			JsonParseException, JsonMappingException, IOException {
-
-		String response = getDynamicData(userId, "profile");
-		JsonNode jsValue = Json.parse(response);
-		JsonNode userNode = jsValue.get("user");
-		if (userNode == null)
-			throw new FitbitException(
-					"No user found in profile json response..");
-
-		FitbitUser fitbitUser = JsonUtils.fromJson(userNode, FitbitUser.class);
+	public String createUpdateUser(String userId) throws Exception {
+		FitbitUser fitbitUser = getUserFromServer(userId);
 		try {
 
 			JPA.withTransaction(() -> {
@@ -292,7 +277,7 @@ public class FitbitService {
 	 */
 	private Response getServerResponse(String userId, Verb verb, String url)
 			throws AuthorizationException {
-		//System.out.println(url);
+		// System.out.println(url);
 		AuthorizationResponse authResponse = getAuthResponse(userId);
 		OAuthRequest request = new OAuthRequest(verb, url, service);
 		service.signRequest(authResponse.oauth2accessToken, request);
@@ -302,6 +287,7 @@ public class FitbitService {
 
 	/**
 	 * Return all fitbit users from DB.
+	 * 
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")
@@ -315,5 +301,31 @@ public class FitbitService {
 			e.printStackTrace();
 		}
 		return null;
+	}
+
+	public FitbitUser getFitbitUser(String userId) throws Throwable {
+		return JPA.withTransaction(() -> {
+			return JpaUtils.getSingleResultOrElseNull(
+					JPA.em().createQuery(
+							"FROM FitbitUser where encodedId = '" + userId
+									+ "'"), FitbitUser.class);
+		});
+	}
+
+	/**
+	 * Call Fitbit server and get User Profile.
+	 * @param userId
+	 * @return
+	 * @throws Exception
+	 */
+	public FitbitUser getUserFromServer(String userId) throws Exception {
+		String response = getDynamicData(userId, "profile");
+
+		JsonNode jsValue = Json.parse(response);
+		JsonNode userNode = jsValue.get("user");
+		if (userNode == null)
+			throw new Exception("No user found in profile json response..");
+
+		return JsonUtils.fromJson(userNode, FitbitUser.class);
 	}
 }

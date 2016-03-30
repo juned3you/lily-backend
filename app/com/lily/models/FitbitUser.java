@@ -111,6 +111,9 @@ public class FitbitUser extends User {
 
 	@Column(name = "weight_unit")
 	public String weightUnit; // unit	
+	
+	@Column(name = "is_sync")
+	public Boolean isSync;
 
 	public Integer getAge() {
 		return age;
