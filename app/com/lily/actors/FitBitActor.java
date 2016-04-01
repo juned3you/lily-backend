@@ -13,9 +13,11 @@ import akka.actor.Props;
 import akka.actor.UntypedActor;
 
 import com.lily.authorize.fitbit.extractor.FitbitExtractor;
+import com.lily.authorize.fitbit.loader.ActivityTimeSeriesLoader;
 import com.lily.authorize.fitbit.loader.DailyActivitiesLoader;
 import com.lily.authorize.fitbit.loader.SleepLogLoader;
 import com.lily.authorize.fitbit.loader.SleepTimeSeriesLoader;
+import com.lily.authorize.fitbit.transformer.ActivityTimeSeriesTransformer;
 import com.lily.authorize.fitbit.transformer.DailyActivitiesTransformer;
 import com.lily.authorize.fitbit.transformer.SleepLogTransformer;
 import com.lily.authorize.fitbit.transformer.SleepTimeSeriesTransformer;
@@ -24,6 +26,7 @@ import com.lily.extractor.ExtractorResponse;
 import com.lily.models.FitbitUser;
 import com.lily.services.FitbitService;
 import com.lily.utils.DateUtils;
+import com.lily.utils.EnumActivities;
 import com.lily.utils.EnumSleep;
 
 /**
@@ -59,6 +62,9 @@ public class FitBitActor extends UntypedActor {
 		// Daily Log
 		loadDailyActivities(fitbitUser);
 
+		//Activity time series
+		loadActivitiesTimeSeries(fitbitUser);
+		
 		// updating sync flag.
 		fitbitUser.isSync = true;
 		JPA.withTransaction(() -> {
@@ -232,13 +238,54 @@ public class FitBitActor extends UntypedActor {
 	}
 
 	/**
+	 * Load Activities log into Mongo for last day date.
+	 * 
+	 * @param fitbitUser
+	 */
+	public void loadActivitiesTimeSeries(FitbitUser fitbitUser) {
+		// Sleep Log
+		String dateString = "";
+		try {
+			dateString = getStartDate(fitbitUser);
+
+			for (EnumActivities es : EnumActivities.values()) {
+				ExtractorRequest sleepRequest = new ExtractorRequest(
+						fitbitUser.encodedId, es.getUri() + "/date/"
+								+ dateString + "/today");
+				// Extract from fitbit
+				ExtractorResponse response = new FitbitExtractor()
+						.extract(sleepRequest);
+				response.setUri(es.getUri());
+				response.setUserId(fitbitUser.encodedId);
+
+				// Transform into model.
+				Object transformResponse = new ActivityTimeSeriesTransformer()
+						.transform(response);
+
+				// Load in mongo db.
+				new ActivityTimeSeriesLoader().load(transformResponse);
+			}
+
+			Logger.info("ActivityTimeSeries for date " + dateString
+					+ " to today has been inserted successfully for user: "
+					+ fitbitUser.encodedId);
+
+		} catch (Throwable t) {
+			Logger.error("Error updating Sleep Time Series  for user: "
+					+ fitbitUser.encodedId + "-> " + t.getMessage());
+			t.printStackTrace();
+		}
+	}
+
+	/**
 	 * Get Start date based on isSync flag.
 	 * 
 	 * @param fitbitUser
 	 * @return
 	 * @throws ParseException
 	 */
-	private String getStartDate(FitbitUser fitbitUser) throws ParseException {
+	private String getStartDate(FitbitUser fitbitUser)
+			throws ParseException {
 		if (fitbitUser.isSync == null || fitbitUser.isSync == false) {
 			return fitbitUser.memberSince;
 		}

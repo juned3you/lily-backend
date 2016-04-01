@@ -2,12 +2,12 @@ package com.lily.utils;
 
 public enum EnumActivities {
 	CALORIES("activities/calories"), CALORIES_BMR("activities/caloriesBMR"), STEPS(
-			"activities/steps"), DISTANCE("activities/distance"), FLOORS(
-			"activities/floors"), ELEVATION("activities/elevation"), MINUTES_SEDENTARY(
-			"activities/minutesSedentary "), MINUTES_LIGHTLY_ACTIVE(
+			"activities/steps"), DISTANCE("activities/distance"), /*FLOORS(
+			"activities/floors"), ELEVATION("activities/elevation"), */MINUTES_SEDENTARY(
+			"activities/minutesSedentary"), MINUTES_LIGHTLY_ACTIVE(
 			"activities/minutesLightlyActive"), MINUTES_FAILY_ACTIVE(
 			"activities/minutesFairlyActive"), MINUTES_VERY_ACTIVE(
-			"activities/minutesVeryActive "), ACTIVITY_CALORIES(
+			"activities/minutesVeryActive"), ACTIVITY_CALORIES(
 			"activities/activityCalories");
 
 	String uri;
@@ -15,4 +15,8 @@ public enum EnumActivities {
 	EnumActivities(String uri) {
 		this.uri = uri;
 	}
+	
+	public String getUri() {
+        return this.uri;
+    }
 }

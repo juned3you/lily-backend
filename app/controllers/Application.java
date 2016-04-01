@@ -2,6 +2,7 @@ package controllers;
 
 import com.lily.actors.FitBitActor;
 import com.lily.models.FitbitUser;
+import com.lily.services.FitbitService;
 
 import play.mvc.Controller;
 import play.mvc.Result;
@@ -9,10 +10,9 @@ import views.html.*;
 
 public class Application extends Controller {
 		
-    public Result index() throws Exception {    	
-    	FitbitUser user = new FitbitUser();
-    	user.encodedId = "4CMMSH";
-    	//FitBitActor.loadDailyActivities(user);
+    public Result index() throws Throwable {    	
+    	FitbitUser user = new FitbitService().getFitbitUser("4CMMSH");    	
+    	//FitBitActor.loadActivitiesTimeSeries(user);
         return ok(index.render("Your new application is ready."));
     }
     
