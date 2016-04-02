@@ -277,7 +277,7 @@ public class FitbitService {
 	 */
 	private Response getServerResponse(String userId, Verb verb, String url)
 			throws AuthorizationException {
-		//System.out.println(url);
+		System.out.println(url);
 		AuthorizationResponse authResponse = getAuthResponse(userId);
 		OAuthRequest request = new OAuthRequest(verb, url, service);
 		service.signRequest(authResponse.oauth2accessToken, request);

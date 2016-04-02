@@ -15,12 +15,16 @@ import akka.actor.UntypedActor;
 import com.lily.authorize.fitbit.extractor.FitbitExtractor;
 import com.lily.authorize.fitbit.loader.ActivityTimeSeriesLoader;
 import com.lily.authorize.fitbit.loader.DailyActivitiesLoader;
+import com.lily.authorize.fitbit.loader.FatLogLoader;
 import com.lily.authorize.fitbit.loader.SleepLogLoader;
 import com.lily.authorize.fitbit.loader.SleepTimeSeriesLoader;
+import com.lily.authorize.fitbit.loader.WeightLogLoader;
 import com.lily.authorize.fitbit.transformer.ActivityTimeSeriesTransformer;
 import com.lily.authorize.fitbit.transformer.DailyActivitiesTransformer;
+import com.lily.authorize.fitbit.transformer.FatLogTransformer;
 import com.lily.authorize.fitbit.transformer.SleepLogTransformer;
 import com.lily.authorize.fitbit.transformer.SleepTimeSeriesTransformer;
+import com.lily.authorize.fitbit.transformer.WeightLogTransformer;
 import com.lily.extractor.ExtractorRequest;
 import com.lily.extractor.ExtractorResponse;
 import com.lily.models.FitbitUser;
@@ -62,8 +66,14 @@ public class FitBitActor extends UntypedActor {
 		// Daily Log
 		loadDailyActivities(fitbitUser);
 
-		//Activity time series
+		// Activity time series
 		loadActivitiesTimeSeries(fitbitUser);
+
+		//fatlog
+		loadFatLog(fitbitUser);
+		
+		//weightLog
+		loadWeightLog(fitbitUser);		
 		
 		// updating sync flag.
 		fitbitUser.isSync = true;
@@ -278,13 +288,93 @@ public class FitBitActor extends UntypedActor {
 	}
 
 	/**
+	 * Load Fat log into Mongo for last day date.
+	 * 
+	 * @param fitbitUser
+	 */
+	public static void loadFatLog(FitbitUser fitbitUser) {
+		// Sleep Log
+		try {
+			Date startDate = DateUtils.formatDate(getStartDate(fitbitUser));			
+			String todayDateString = DateUtils.formatDate(new Date());
+
+			String dateString = DateUtils.formatDate(startDate);
+			ExtractorRequest fatRequest = new ExtractorRequest(
+					fitbitUser.encodedId, "body/log/fat/date/" + dateString
+							+ "/" + todayDateString);
+
+			// Extract from fitbit
+			ExtractorResponse response = new FitbitExtractor()
+					.extract(fatRequest);
+			response.setDate(dateString);
+			response.setUserId(fitbitUser.encodedId);
+
+			// Transform into model.
+			Object transformResponse = new FatLogTransformer()
+					.transform(response);
+
+			// Load in mongo db.
+			new FatLogLoader().load(transformResponse);
+
+			Logger.info("FatLog for date " + dateString
+					+ " has been inserted successfully for user: "
+					+ fitbitUser.encodedId);			
+
+		} catch (Throwable t) {
+			Logger.error("Error updating Sleep log for user: "
+					+ fitbitUser.encodedId + "-> " + t.getMessage());
+			t.printStackTrace();
+		}
+	}
+	
+	/**
+	 * Load Weight log into Mongo for last day date.
+	 * 
+	 * @param fitbitUser
+	 */
+	public static void loadWeightLog(FitbitUser fitbitUser) {
+		// Sleep Log
+		try {
+			Date startDate = DateUtils.formatDate(getStartDate(fitbitUser));			
+			String todayDateString = DateUtils.formatDate(new Date());
+
+			String dateString = DateUtils.formatDate(startDate);
+			ExtractorRequest fatRequest = new ExtractorRequest(
+					fitbitUser.encodedId, "body/log/weight/date/" + dateString
+							+ "/" + todayDateString);
+
+			// Extract from fitbit
+			ExtractorResponse response = new FitbitExtractor()
+					.extract(fatRequest);
+			response.setDate(dateString);
+			response.setUserId(fitbitUser.encodedId);
+
+			// Transform into model.
+			Object transformResponse = new WeightLogTransformer()
+					.transform(response);
+
+			// Load in mongo db.
+			new WeightLogLoader().load(transformResponse);
+
+			Logger.info("WeightLog for date " + dateString
+					+ " has been inserted successfully for user: "
+					+ fitbitUser.encodedId);			
+
+		} catch (Throwable t) {
+			Logger.error("Error updating Sleep log for user: "
+					+ fitbitUser.encodedId + "-> " + t.getMessage());
+			t.printStackTrace();
+		}
+	}
+
+	/**
 	 * Get Start date based on isSync flag.
 	 * 
 	 * @param fitbitUser
 	 * @return
 	 * @throws ParseException
 	 */
-	private String getStartDate(FitbitUser fitbitUser)
+	private static String getStartDate(FitbitUser fitbitUser)
 			throws ParseException {
 		if (fitbitUser.isSync == null || fitbitUser.isSync == false) {
 			return fitbitUser.memberSince;
