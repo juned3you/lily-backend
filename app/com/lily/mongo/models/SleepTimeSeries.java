@@ -20,7 +20,7 @@ public class SleepTimeSeries extends Model {
 	public ObjectId id;	
 	
 	public Date dateTime;
-	public Integer value;
+	public String value;
 	
 	public String resourcePath;
 	public String userId;

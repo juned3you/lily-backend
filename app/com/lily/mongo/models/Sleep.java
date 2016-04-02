@@ -30,6 +30,7 @@ public class Sleep extends Model {
 	public Integer restlessCount;
 	public Integer restlessDuration;
 	public Integer timeInBed;
+	public Date dateOfSleep;
 	
 	@Embedded
 	public List<DateTimeData> minuteData;
