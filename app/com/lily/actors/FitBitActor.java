@@ -16,12 +16,14 @@ import com.lily.authorize.fitbit.extractor.FitbitExtractor;
 import com.lily.authorize.fitbit.loader.ActivityTimeSeriesLoader;
 import com.lily.authorize.fitbit.loader.DailyActivitiesLoader;
 import com.lily.authorize.fitbit.loader.FatLogLoader;
+import com.lily.authorize.fitbit.loader.HeartRateLoader;
 import com.lily.authorize.fitbit.loader.SleepLogLoader;
 import com.lily.authorize.fitbit.loader.SleepTimeSeriesLoader;
 import com.lily.authorize.fitbit.loader.WeightLogLoader;
 import com.lily.authorize.fitbit.transformer.ActivityTimeSeriesTransformer;
 import com.lily.authorize.fitbit.transformer.DailyActivitiesTransformer;
 import com.lily.authorize.fitbit.transformer.FatLogTransformer;
+import com.lily.authorize.fitbit.transformer.HeartRateTransformer;
 import com.lily.authorize.fitbit.transformer.SleepLogTransformer;
 import com.lily.authorize.fitbit.transformer.SleepTimeSeriesTransformer;
 import com.lily.authorize.fitbit.transformer.WeightLogTransformer;
@@ -69,12 +71,15 @@ public class FitBitActor extends UntypedActor {
 		// Activity time series
 		loadActivitiesTimeSeries(fitbitUser);
 
-		//fatlog
+		// fatlog
 		loadFatLog(fitbitUser);
-		
-		//weightLog
-		loadWeightLog(fitbitUser);		
-		
+
+		// weightLog
+		loadWeightLog(fitbitUser);
+
+		// heartRate
+		loadHeartRate(fitbitUser);
+
 		// updating sync flag.
 		fitbitUser.isSync = true;
 		JPA.withTransaction(() -> {
@@ -295,7 +300,7 @@ public class FitBitActor extends UntypedActor {
 	public static void loadFatLog(FitbitUser fitbitUser) {
 		// Sleep Log
 		try {
-			Date startDate = DateUtils.formatDate(getStartDate(fitbitUser));			
+			Date startDate = DateUtils.formatDate(getStartDate(fitbitUser));
 			String todayDateString = DateUtils.formatDate(new Date());
 
 			String dateString = DateUtils.formatDate(startDate);
@@ -316,17 +321,18 @@ public class FitBitActor extends UntypedActor {
 			// Load in mongo db.
 			new FatLogLoader().load(transformResponse);
 
-			Logger.info("FatLog for date " + dateString
+			Logger.info("FatLog for date " + dateString + " - "
+					+ todayDateString
 					+ " has been inserted successfully for user: "
-					+ fitbitUser.encodedId);			
+					+ fitbitUser.encodedId);
 
 		} catch (Throwable t) {
-			Logger.error("Error updating Sleep log for user: "
+			Logger.error("Error updating FatLog for user: "
 					+ fitbitUser.encodedId + "-> " + t.getMessage());
 			t.printStackTrace();
 		}
 	}
-	
+
 	/**
 	 * Load Weight log into Mongo for last day date.
 	 * 
@@ -335,7 +341,7 @@ public class FitBitActor extends UntypedActor {
 	public static void loadWeightLog(FitbitUser fitbitUser) {
 		// Sleep Log
 		try {
-			Date startDate = DateUtils.formatDate(getStartDate(fitbitUser));			
+			Date startDate = DateUtils.formatDate(getStartDate(fitbitUser));
 			String todayDateString = DateUtils.formatDate(new Date());
 
 			String dateString = DateUtils.formatDate(startDate);
@@ -356,12 +362,54 @@ public class FitBitActor extends UntypedActor {
 			// Load in mongo db.
 			new WeightLogLoader().load(transformResponse);
 
-			Logger.info("WeightLog for date " + dateString
+			Logger.info("WeightLog for date " + dateString + " - "
+					+ todayDateString
 					+ " has been inserted successfully for user: "
-					+ fitbitUser.encodedId);			
+					+ fitbitUser.encodedId);
 
 		} catch (Throwable t) {
-			Logger.error("Error updating Sleep log for user: "
+			Logger.error("Error updating WeightLog for user: "
+					+ fitbitUser.encodedId + "-> " + t.getMessage());
+			t.printStackTrace();
+		}
+	}
+
+	/**
+	 * Load HeartRate into Mongo for last day date.
+	 * 
+	 * @param fitbitUser
+	 */
+	public static void loadHeartRate(FitbitUser fitbitUser) {
+		// Sleep Log
+		try {
+			Date startDate = DateUtils.formatDate(getStartDate(fitbitUser));
+			String todayDateString = DateUtils.formatDate(new Date());
+
+			String dateString = DateUtils.formatDate(startDate);
+			ExtractorRequest fatRequest = new ExtractorRequest(
+					fitbitUser.encodedId, "activities/heart/date/" + dateString
+							+ "/" + todayDateString);
+
+			// Extract from fitbit
+			ExtractorResponse response = new FitbitExtractor()
+					.extract(fatRequest);
+			response.setDate(dateString);
+			response.setUserId(fitbitUser.encodedId);
+
+			// Transform into model.
+			Object transformResponse = new HeartRateTransformer()
+					.transform(response);
+
+			// Load in mongo db.
+			new HeartRateLoader().load(transformResponse);
+
+			Logger.info("HeartRate for date " + dateString + " - "
+					+ todayDateString
+					+ " has been inserted successfully for user: "
+					+ fitbitUser.encodedId);
+
+		} catch (Throwable t) {
+			Logger.error("Error updating HeartRate for user: "
 					+ fitbitUser.encodedId + "-> " + t.getMessage());
 			t.printStackTrace();
 		}
