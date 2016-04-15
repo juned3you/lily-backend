@@ -14,6 +14,7 @@ import akka.actor.UntypedActor;
 
 import com.lily.authorize.fitbit.extractor.FitbitExtractor;
 import com.lily.authorize.fitbit.loader.ActivityTimeSeriesLoader;
+import com.lily.authorize.fitbit.loader.CategoryLoader;
 import com.lily.authorize.fitbit.loader.DailyActivitiesLoader;
 import com.lily.authorize.fitbit.loader.FatLogLoader;
 import com.lily.authorize.fitbit.loader.HeartRateLoader;
@@ -21,6 +22,7 @@ import com.lily.authorize.fitbit.loader.SleepLogLoader;
 import com.lily.authorize.fitbit.loader.SleepTimeSeriesLoader;
 import com.lily.authorize.fitbit.loader.WeightLogLoader;
 import com.lily.authorize.fitbit.transformer.ActivityTimeSeriesTransformer;
+import com.lily.authorize.fitbit.transformer.CategoryTransformer;
 import com.lily.authorize.fitbit.transformer.DailyActivitiesTransformer;
 import com.lily.authorize.fitbit.transformer.FatLogTransformer;
 import com.lily.authorize.fitbit.transformer.HeartRateTransformer;
@@ -288,6 +290,38 @@ public class FitBitActor extends UntypedActor {
 		} catch (Throwable t) {
 			Logger.error("Error updating Sleep Time Series  for user: "
 					+ fitbitUser.encodedId + "-> " + t.getMessage());
+			t.printStackTrace();
+		}
+	}
+
+	/**
+	 * Load Fat log into Mongo for last day date.
+	 * 
+	 * @param fitbitUser
+	 */
+	public static void loadAllPublicActivities(FitbitUser fitbitUser) {
+		// Sleep Log
+		try {
+
+			ExtractorRequest activitiesRequest = new ExtractorRequest(
+					fitbitUser.encodedId, "activities");
+
+			String responseStr = new FitbitService().getFitbitData(
+					activitiesRequest.getUserId(), activitiesRequest.getUri());
+			ExtractorResponse response = new ExtractorResponse(responseStr);
+			response.setUserId(fitbitUser.encodedId);
+
+			// Transform into model.
+			Object transformResponse = new CategoryTransformer()
+					.transform(response);
+
+			// Load in mongo db.
+			new CategoryLoader().load(transformResponse);
+			Logger.info("Categories and activities are updated successfully.");
+
+		} catch (Throwable t) {
+			Logger.error("Error updating Categories and activities" + "-> "
+					+ t.getMessage());
 			t.printStackTrace();
 		}
 	}

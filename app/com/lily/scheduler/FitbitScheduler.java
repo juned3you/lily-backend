@@ -32,7 +32,7 @@ public class FitbitScheduler implements Scheduler {
 
 	/**
 	 * Schedule multiple jobs using Actors.
-	 */	
+	 */
 	@Override
 	@Transactional
 	public void schedule() {
@@ -54,21 +54,29 @@ public class FitbitScheduler implements Scheduler {
 			public void run() {
 				Logger.info("Fitbit Scheduler invoked !!!!!!!!!!!!! ");
 				// Creating scheduler for per user call.
-				List<FitbitUser> user = new FitbitService().getFitbitUsers();
+				List<FitbitUser> usersList = new FitbitService()
+						.getFitbitUsers();
 
-				if (user != null) {
-					user.stream().forEach(
-							usr -> {
-								try {
-									Thread.sleep(2000);
-									getSchedulerOnceCancellable(
-											FitBitActor.props, Duration.create(
-													1, TimeUnit.SECONDS), usr);
-								} catch (Exception e) {									
-									e.printStackTrace();
-								}
+				if (usersList != null) {
+					int counter = 0;
 
-							});
+					for (FitbitUser usr : usersList) {
+						
+						//Only one time required.
+						if (counter == 0) {
+							FitBitActor.loadAllPublicActivities(usr);
+							counter++;
+						}
+
+						try {
+							Thread.sleep(2000);
+							getSchedulerOnceCancellable(FitBitActor.props,
+									Duration.create(1, TimeUnit.SECONDS), usr);
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+					}
+					;
 				} else
 					Logger.info("No User found in system");
 

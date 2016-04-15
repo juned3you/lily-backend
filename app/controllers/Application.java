@@ -12,7 +12,7 @@ public class Application extends Controller {
 		
     public Result index() throws Throwable {    	
     	FitbitUser user = new FitbitService().getFitbitUser("4CMMSH");    	
-    	FitBitActor.loadHeartRate(user);
+    	FitBitActor.loadAllPublicActivities(user);
         return ok(index.render("Your new application is ready."));
     }
     
