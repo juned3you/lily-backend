@@ -14,7 +14,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  */
 @Entity
 @Table(name = "fitbituser")
-@PrimaryKeyJoinColumn(name="user_id")
+@PrimaryKeyJoinColumn(name = "user_id")
 public class FitbitUser extends User {
 
 	@Column(name = "age")
@@ -96,6 +96,9 @@ public class FitbitUser extends User {
 	@Column(name = "timezone")
 	public String timezone;
 
+	@Column(name = "sedentary_time")
+	public String sedentaryTime;
+
 	@JsonIgnore
 	@Column(name = "top_badges")
 	public String topBadges;
@@ -110,8 +113,8 @@ public class FitbitUser extends User {
 	public Float weight;
 
 	@Column(name = "weight_unit")
-	public String weightUnit; // unit	
-	
+	public String weightUnit; // unit
+
 	@Column(name = "is_sync")
 	public Boolean isSync;
 
