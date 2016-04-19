@@ -96,6 +96,7 @@ public class FitbitUser extends User {
 	@Column(name = "timezone")
 	public String timezone;
 
+	@JsonIgnore
 	@Column(name = "sedentary_time")
 	public String sedentaryTime;
 

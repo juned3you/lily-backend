@@ -49,6 +49,8 @@ public class User extends Model {
 	public String memberSince;
 	public String startDayOfWeek;
 	public String strideLengthRunningType;
+	
+	@JsonIgnore
 	public String sedentaryTime;
 	
 	@JsonIgnore
