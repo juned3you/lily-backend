@@ -84,6 +84,9 @@ public class FitBitActor extends UntypedActor {
 		// heartRate
 		loadHeartRate(fitbitUser);
 
+		// Friends
+		loadFriends(fitbitUser);
+		
 		// updating sync flag.
 		fitbitUser.isSync = true;
 		JPA.withTransaction(() -> {
