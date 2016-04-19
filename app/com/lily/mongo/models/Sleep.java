@@ -15,7 +15,7 @@ public class Sleep extends Model {
 	public ObjectId id;
 	public Boolean isMainSleep;
 
-	public Integer logId;
+	public Long logId;
 	public Integer efficiency;
 	public Date startTime;
 	public Long duration;
