@@ -17,6 +17,7 @@ import com.lily.authorize.fitbit.loader.ActivityTimeSeriesLoader;
 import com.lily.authorize.fitbit.loader.CategoryLoader;
 import com.lily.authorize.fitbit.loader.DailyActivitiesLoader;
 import com.lily.authorize.fitbit.loader.FatLogLoader;
+import com.lily.authorize.fitbit.loader.FriendLoader;
 import com.lily.authorize.fitbit.loader.HeartRateLoader;
 import com.lily.authorize.fitbit.loader.SleepLogLoader;
 import com.lily.authorize.fitbit.loader.SleepTimeSeriesLoader;
@@ -25,6 +26,7 @@ import com.lily.authorize.fitbit.transformer.ActivityTimeSeriesTransformer;
 import com.lily.authorize.fitbit.transformer.CategoryTransformer;
 import com.lily.authorize.fitbit.transformer.DailyActivitiesTransformer;
 import com.lily.authorize.fitbit.transformer.FatLogTransformer;
+import com.lily.authorize.fitbit.transformer.FriendTransformer;
 import com.lily.authorize.fitbit.transformer.HeartRateTransformer;
 import com.lily.authorize.fitbit.transformer.SleepLogTransformer;
 import com.lily.authorize.fitbit.transformer.SleepTimeSeriesTransformer;
@@ -331,7 +333,7 @@ public class FitBitActor extends UntypedActor {
 	 * 
 	 * @param fitbitUser
 	 */
-	public static void loadFatLog(FitbitUser fitbitUser) {
+	public void loadFatLog(FitbitUser fitbitUser) {
 		// Sleep Log
 		try {
 			Date startDate = DateUtils.formatDate(getStartDate(fitbitUser));
@@ -372,7 +374,7 @@ public class FitBitActor extends UntypedActor {
 	 * 
 	 * @param fitbitUser
 	 */
-	public static void loadWeightLog(FitbitUser fitbitUser) {
+	public void loadWeightLog(FitbitUser fitbitUser) {
 		// Sleep Log
 		try {
 			Date startDate = DateUtils.formatDate(getStartDate(fitbitUser));
@@ -413,7 +415,7 @@ public class FitBitActor extends UntypedActor {
 	 * 
 	 * @param fitbitUser
 	 */
-	public static void loadHeartRate(FitbitUser fitbitUser) {
+	public void loadHeartRate(FitbitUser fitbitUser) {
 		// Sleep Log
 		try {
 			Date startDate = DateUtils.formatDate(getStartDate(fitbitUser));
@@ -444,6 +446,39 @@ public class FitBitActor extends UntypedActor {
 
 		} catch (Throwable t) {
 			Logger.error("Error updating HeartRate for user: "
+					+ fitbitUser.encodedId + "-> " + t.getMessage());
+			t.printStackTrace();
+		}
+	}
+
+	/**
+	 * Load Friends into Mongo.
+	 * 
+	 * @param fitbitUser
+	 */
+	public static void loadFriends(FitbitUser fitbitUser) {
+		// Sleep Log
+		try {
+			ExtractorRequest fatRequest = new ExtractorRequest(
+					fitbitUser.encodedId, "friends");
+
+			// Extract from fitbit
+			ExtractorResponse response = new FitbitExtractor()
+					.extract(fatRequest);
+			response.setUserId(fitbitUser.encodedId);
+
+			// Transform into model.
+			Object transformResponse = new FriendTransformer()
+					.transform(response);
+
+			// Load in mongo db.
+			new FriendLoader().load(transformResponse);
+
+			Logger.info("FriendList has been inserted successfully for user: "
+					+ fitbitUser.encodedId);
+
+		} catch (Throwable t) {
+			Logger.error("Error updating FriendList for user: "
 					+ fitbitUser.encodedId + "-> " + t.getMessage());
 			t.printStackTrace();
 		}
