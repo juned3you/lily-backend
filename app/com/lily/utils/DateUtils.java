@@ -5,12 +5,14 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.TimeZone;
 
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.Seconds;
 
+import com.lily.utils.LilyConstants.DurationInterval;
 import com.typesafe.config.ConfigFactory;
 
 /**
@@ -20,8 +22,9 @@ import com.typesafe.config.ConfigFactory;
  */
 public class DateUtils {
 
-	private static DateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
-	
+	private static DateFormat simpleDateFormat = new SimpleDateFormat(
+			"yyyy-MM-dd");
+
 	/**
 	 * Format date.
 	 * 
@@ -29,10 +32,10 @@ public class DateUtils {
 	 * @return
 	 * @throws ParseException
 	 */
-	public static Date formatDate(String date) throws ParseException {		
+	public static Date formatDate(String date) throws ParseException {
 		return simpleDateFormat.parse(date);
 	}
-	
+
 	/**
 	 * Format date.
 	 * 
@@ -40,7 +43,7 @@ public class DateUtils {
 	 * @return
 	 * @throws ParseException
 	 */
-	public static String formatDate(Date date) throws ParseException {		
+	public static String formatDate(Date date) throws ParseException {
 		return simpleDateFormat.format(date);
 	}
 
@@ -107,5 +110,79 @@ public class DateUtils {
 				.getTimeZone(ConfigFactory.load().getString(
 						"scheduler.timezone")));
 		return new DateTime(cetTimeZone);
+	}
+
+	public static Date setStartTime(Date date) {
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(date);
+		cal.set(Calendar.HOUR_OF_DAY, 0);
+		cal.set(Calendar.MINUTE, 0);
+		cal.set(Calendar.SECOND, 0);
+		cal.set(Calendar.MILLISECOND, 0);
+		return cal.getTime();
+	}
+
+	public static Date setEndTime(Date date) {
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(date);
+		cal.set(Calendar.HOUR_OF_DAY, 23);
+		cal.set(Calendar.MINUTE, 59);
+		cal.set(Calendar.SECOND, 59);
+		return cal.getTime();
+	}
+
+	/**
+	 * Return date range based on interval.
+	 * 
+	 * @param interval
+	 */
+	public static Date[] getDateRange(DurationInterval interval) {
+		Date today = new Date();
+		Calendar gcal = new GregorianCalendar();
+		gcal.setTime(today);
+
+		Date startDate = today;
+		Date endDate = today;
+
+		switch (interval) {
+		case YEARLY:
+			gcal.set(Calendar.DAY_OF_YEAR,
+					gcal.getActualMinimum(Calendar.DAY_OF_YEAR));
+			startDate = gcal.getTime();
+
+			gcal.set(Calendar.DAY_OF_YEAR,
+					gcal.getActualMaximum(Calendar.DAY_OF_YEAR));
+			endDate = gcal.getTime();
+			break;
+
+		case MONTHLY:
+			gcal.set(Calendar.DAY_OF_MONTH,
+					gcal.getActualMinimum(Calendar.DAY_OF_MONTH));
+			startDate = gcal.getTime();
+
+			gcal.set(Calendar.DAY_OF_MONTH,
+					gcal.getActualMaximum(Calendar.DAY_OF_MONTH));
+			endDate = gcal.getTime();
+			break;
+
+		case WEEKLY:
+			gcal.set(Calendar.DAY_OF_WEEK,
+					gcal.getActualMinimum(Calendar.DAY_OF_WEEK));
+			startDate = gcal.getTime();
+
+			gcal.set(Calendar.DAY_OF_WEEK,
+					gcal.getActualMaximum(Calendar.DAY_OF_WEEK));
+			endDate = gcal.getTime();
+			break;
+
+		case DAILY:
+			startDate = gcal.getTime();
+			endDate = gcal.getTime();
+			break;
+		}
+
+		startDate = setStartTime(startDate);
+		endDate = setEndTime(endDate);
+		return new Date[] { startDate, endDate };
 	}
 }

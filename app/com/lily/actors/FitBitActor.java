@@ -67,13 +67,13 @@ public class FitBitActor extends UntypedActor {
 		loadSleepLog(fitbitUser);
 
 		// Sleep time series
-		loadSleepTimeSeries(fitbitUser);
+		//loadSleepTimeSeries(fitbitUser);
 
 		// Daily Log
 		loadDailyActivities(fitbitUser);
 
 		// Activity time series
-		loadActivitiesTimeSeries(fitbitUser);
+		//loadActivitiesTimeSeries(fitbitUser);
 
 		// fatlog
 		loadFatLog(fitbitUser);

@@ -2,7 +2,9 @@ package controllers;
 
 import com.lily.actors.FitBitActor;
 import com.lily.models.FitbitUser;
+import com.lily.process.GoalCompletionProcess;
 import com.lily.services.FitbitService;
+import com.lily.utils.LilyConstants.DurationInterval;
 
 import play.mvc.Controller;
 import play.mvc.Result;
@@ -12,7 +14,8 @@ public class Application extends Controller {
 		
     public Result index() throws Throwable {    	
     	FitbitUser user = new FitbitService().getFitbitUser("4CMMSH");    	
-    	FitBitActor.loadFriends(user);
+    	//FitBitActor.loadFriends(user);
+    	new GoalCompletionProcess().getGoalCompletion(user.encodedId, DurationInterval.MONTHLY);
         return ok(index.render("Your new application is ready."));
     }
     
