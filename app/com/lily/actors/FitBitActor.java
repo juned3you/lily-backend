@@ -19,6 +19,7 @@ import com.lily.authorize.fitbit.loader.DailyActivitiesLoader;
 import com.lily.authorize.fitbit.loader.FatLogLoader;
 import com.lily.authorize.fitbit.loader.FriendLoader;
 import com.lily.authorize.fitbit.loader.HeartRateLoader;
+import com.lily.authorize.fitbit.loader.SleepGoalLoader;
 import com.lily.authorize.fitbit.loader.SleepLogLoader;
 import com.lily.authorize.fitbit.loader.SleepTimeSeriesLoader;
 import com.lily.authorize.fitbit.loader.WeightLogLoader;
@@ -28,6 +29,7 @@ import com.lily.authorize.fitbit.transformer.DailyActivitiesTransformer;
 import com.lily.authorize.fitbit.transformer.FatLogTransformer;
 import com.lily.authorize.fitbit.transformer.FriendTransformer;
 import com.lily.authorize.fitbit.transformer.HeartRateTransformer;
+import com.lily.authorize.fitbit.transformer.SleepGoalTransformer;
 import com.lily.authorize.fitbit.transformer.SleepLogTransformer;
 import com.lily.authorize.fitbit.transformer.SleepTimeSeriesTransformer;
 import com.lily.authorize.fitbit.transformer.WeightLogTransformer;
@@ -67,13 +69,13 @@ public class FitBitActor extends UntypedActor {
 		loadSleepLog(fitbitUser);
 
 		// Sleep time series
-		//loadSleepTimeSeries(fitbitUser);
+		// loadSleepTimeSeries(fitbitUser);
 
 		// Daily Log
 		loadDailyActivities(fitbitUser);
 
 		// Activity time series
-		//loadActivitiesTimeSeries(fitbitUser);
+		// loadActivitiesTimeSeries(fitbitUser);
 
 		// fatlog
 		loadFatLog(fitbitUser);
@@ -87,6 +89,9 @@ public class FitBitActor extends UntypedActor {
 		// Friends
 		loadFriends(fitbitUser);
 		
+		//Sleeplog
+		loadSleepGoal(fitbitUser);
+
 		// updating sync flag.
 		fitbitUser.isSync = true;
 		JPA.withTransaction(() -> {
@@ -482,6 +487,39 @@ public class FitBitActor extends UntypedActor {
 
 		} catch (Throwable t) {
 			Logger.error("Error updating FriendList for user: "
+					+ fitbitUser.encodedId + "-> " + t.getMessage());
+			t.printStackTrace();
+		}
+	}
+
+	/**
+	 * Load HeartRate into Mongo for last day date.
+	 * 
+	 * @param fitbitUser
+	 */
+	public static void loadSleepGoal(FitbitUser fitbitUser) {
+		// Sleep Log
+		try {
+			ExtractorRequest fatRequest = new ExtractorRequest(
+					fitbitUser.encodedId, "sleep/goal");
+
+			// Extract from fitbit
+			ExtractorResponse response = new FitbitExtractor()
+					.extract(fatRequest);
+			response.setUserId(fitbitUser.encodedId);
+
+			// Transform into model.
+			Object transformResponse = new SleepGoalTransformer()
+					.transform(response);
+
+			// Load in mongo db.
+			new SleepGoalLoader().load(transformResponse);
+
+			Logger.info("SleepGoal has been inserted successfully for user: "
+					+ fitbitUser.encodedId);
+
+		} catch (Throwable t) {
+			Logger.error("Error updating SleepGoal for user: "
 					+ fitbitUser.encodedId + "-> " + t.getMessage());
 			t.printStackTrace();
 		}
