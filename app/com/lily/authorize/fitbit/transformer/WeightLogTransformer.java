@@ -2,6 +2,7 @@ package com.lily.authorize.fitbit.transformer;
 
 import java.util.List;
 
+import play.Logger;
 import play.libs.Json;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -23,13 +24,15 @@ public class WeightLogTransformer implements Transformer {
 	@Override
 	public Object transform(Object obj) throws TransformerException {
 		ExtractorResponse exResponse = (ExtractorResponse) obj;
+		JsonNode jsValue = null;
 		try {
-			JsonNode jsValue = Json.parse(exResponse.getResponse());
+			jsValue = Json.parse(exResponse.getResponse());
 			JsonNode fatNode = jsValue.get("weight");
 
 			// Creating weight log model
 			List<WeightLog> weightLogs = JsonUtils.convertToModelCollection(
-					Json.stringify(fatNode), new TypeReference<List<WeightLog>>() {
+					Json.stringify(fatNode),
+					new TypeReference<List<WeightLog>>() {
 					});
 
 			weightLogs.forEach(weight -> {
@@ -37,6 +40,8 @@ public class WeightLogTransformer implements Transformer {
 			});
 			return weightLogs;
 		} catch (Throwable e) {
+			if (jsValue != null)
+				Logger.info(jsValue.toString());
 			throw new TransformerException(e);
 		}
 	}
