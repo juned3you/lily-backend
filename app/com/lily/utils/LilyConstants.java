@@ -32,4 +32,33 @@ public interface LilyConstants {
 	public enum DurationInterval {
 		YEARLY, MONTHLY, WEEKLY, DAILY;
 	}
+
+	/**
+	 * Static methods
+	 * @author Mohammad
+	 *
+	 */
+	public static class ConstantClass {
+		public static Integer getDays(DurationInterval interval) {
+			switch (interval) {
+			case YEARLY:
+				return 365;
+			case MONTHLY:
+				return 30;
+			case WEEKLY:
+				return 6;
+			case DAILY:
+				return 1;
+			}
+			return 30;
+		}
+	};
+
+	public interface GoalConfiguration {
+		public String MONTHLY_GROWTH = "MonthlyGrowth";
+		public String SLEEP = "Sleep";
+		public String STEPS = "Steps";
+		public String BPM = "BPM";
+		public String ACTIVE_MINUTES = "ActiveMinutes";
+	}
 }

@@ -1,12 +1,10 @@
 package com.lily.process;
 
-import java.util.Date;
-import java.util.List;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
-import com.lily.mongo.models.DailyActivity;
-import com.lily.utils.DateUtils;
+import com.lily.http.GoalCompletionResponse;
 import com.lily.utils.LilyConstants.DurationInterval;
-import com.typesafe.config.ConfigFactory;
 
 /**
  * Goal Completion based on interval
@@ -14,39 +12,44 @@ import com.typesafe.config.ConfigFactory;
  * @author Mohammad
  *
  */
+@Singleton
 public class GoalCompletionProcess {
+
+	@Inject
+	private SleepGoalCalculationProcess sleepProcess;
+
+	@Inject
+	private ActivityGoalCalculationProcess activityGoalCalculationProcess;
+
+	@Inject
+	private StepGoalCalculationProcess stepGoalCalculationProcess;
 
 	/**
 	 * Get Goal completion based on interval.
 	 * 
 	 * @param interval
+	 * @throws Throwable
 	 */
-	public final void getGoalCompletion(String userId,
-			final DurationInterval interval) {
-		
-		Integer sleepGoal = getSleepGoal();
-		Integer stepGoal = getStepGoal();
-		Integer activityGoal = getActivityGoal();
-		
-		Date[] dateRange = DateUtils.getDateRange(interval);
-		List<DailyActivity> dailyActivities = DailyActivity.find()
-				.filter("userId", userId).filter("date >=", dateRange[0])
-				.filter("date <", dateRange[1]).asList();
+	public final GoalCompletionResponse getGoalCompletion(String userId,
+			final DurationInterval interval) throws Throwable {
 
-		for (DailyActivity da : dailyActivities) {
-			System.out.println("Date: " + da.date);
-		}
-	}
+		final GoalCompletionResponse response = new GoalCompletionResponse();
 
-	public Integer getSleepGoal() {
-		return ConfigFactory.load().getInt("sleep.goal");
-	}
+		response.sleepGoal = sleepProcess.getMonthlySleepGoal();
+		response.sleepPoints = sleepProcess.calculate(userId, interval);
 
-	public Integer getStepGoal() {
-		return ConfigFactory.load().getInt("step.goal");
-	}
+		response.stepGoal = stepGoalCalculationProcess.getMonthlyStepGoal();
+		response.stepPoints = stepGoalCalculationProcess.calculate(userId,
+				interval);
 
-	public Integer getActivityGoal() {
-		return ConfigFactory.load().getInt("activity.goal");
+		response.activityGoal = activityGoalCalculationProcess
+				.getMonthlyActivityGoal();
+		response.activityPoints = activityGoalCalculationProcess.calculate(
+				userId, interval);
+
+		response.monthlyGoalCompletion = response.sleepGoal + response.stepGoal
+				+ response.activityGoal;
+
+		return response;
 	}
 }
