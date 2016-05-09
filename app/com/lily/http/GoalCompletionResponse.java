@@ -18,4 +18,10 @@ public class GoalCompletionResponse {
 	public Float activityPoints;
 
 	public Integer monthlyGoalCompletion;
+	public Float monthlyGoalCompletionPoints;
+	
+	public Float multiplyingCoefficient;
+	public Float monthlyGrowthPercentage;
+	
+	public Float monthlyGrowth;	
 }

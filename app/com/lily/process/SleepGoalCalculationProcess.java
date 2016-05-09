@@ -5,6 +5,7 @@ import java.util.List;
 
 import javax.inject.Singleton;
 
+import com.lily.models.FitbitUser;
 import com.lily.models.GoalConfiguration;
 import com.lily.mongo.models.SleepLog;
 import com.lily.utils.DateUtils;
@@ -18,11 +19,11 @@ public class SleepGoalCalculationProcess {
 	/**
 	 * Calculate Monthly Sleep Goal.
 	 */
-	public Float calculate(String userId, final DurationInterval interval)
+	public Float calculate(FitbitUser fitbitUser, final DurationInterval interval)
 			throws Throwable {
 		try {
 			Integer monthlySleepGoal = getMonthlySleepGoal();
-			Float totalSleepPoints = getSleepTotalPoints(userId, interval,
+			Float totalSleepPoints = getSleepTotalPoints(fitbitUser.encodedId, interval,
 					monthlySleepGoal);
 			return totalSleepPoints;
 		} catch (Throwable t) {

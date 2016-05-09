@@ -5,6 +5,7 @@ import java.util.List;
 
 import javax.inject.Singleton;
 
+import com.lily.models.FitbitUser;
 import com.lily.models.GoalConfiguration;
 import com.lily.mongo.models.DailyActivity;
 import com.lily.utils.DateUtils;
@@ -18,11 +19,11 @@ public class StepGoalCalculationProcess {
 	/**
 	 * Calculate Monthly Step Goal.
 	 */
-	public Float calculate(String userId, final DurationInterval interval)
+	public Float calculate(FitbitUser fitbitUser, final DurationInterval interval)
 			throws Throwable {
 		try {
 			Integer monthlyStepGoal = getMonthlyStepGoal();
-			Float totalStepPoints = getStepTotalPoints(userId, interval,
+			Float totalStepPoints = getStepTotalPoints(fitbitUser.encodedId, interval,
 					monthlyStepGoal);
 			return totalStepPoints;
 		} catch (Throwable t) {

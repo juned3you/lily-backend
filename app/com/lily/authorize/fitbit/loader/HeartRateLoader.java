@@ -1,5 +1,6 @@
 package com.lily.authorize.fitbit.loader;
 
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -39,7 +40,7 @@ public class HeartRateLoader implements Loader {
 		if (heartActivitiesList != null && heartActivitiesList.size() > 0) {
 			heartActivities = heartActivitiesList.get(0);
 
-			List<String> datesList = heartActivitiesList.stream()
+			List<Date> datesList = heartActivitiesList.stream()
 					.map(slp -> slp.dateTime).collect(Collectors.toList());
 
 			Query<HeartActivities> oldActivityTimeSeries = HeartActivities.find()

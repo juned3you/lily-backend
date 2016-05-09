@@ -1,5 +1,7 @@
 package com.lily.mongo.models;
 
+import java.util.Date;
+
 import org.bson.types.ObjectId;
 import org.mongodb.morphia.annotations.Embedded;
 import org.mongodb.morphia.annotations.Id;
@@ -11,7 +13,7 @@ public class HeartActivities extends Model {
 	@Id
 	public ObjectId id;
 
-	public String dateTime;
+	public Date dateTime;
 
 	public Integer restingHeartRate;
 

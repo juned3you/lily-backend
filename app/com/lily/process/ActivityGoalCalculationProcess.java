@@ -1,12 +1,16 @@
 package com.lily.process;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 import javax.inject.Singleton;
 
+import com.google.common.collect.Lists;
+import com.lily.models.FitbitUser;
 import com.lily.models.GoalConfiguration;
-import com.lily.mongo.models.SleepLog;
+import com.lily.mongo.models.CustomHeartRateZone;
+import com.lily.mongo.models.HeartActivities;
 import com.lily.utils.DateUtils;
 import com.lily.utils.LilyConstants;
 import com.lily.utils.LilyConstants.DurationInterval;
@@ -18,9 +22,17 @@ public class ActivityGoalCalculationProcess {
 	/**
 	 * Calculate Monthly Activity Goal.
 	 */
-	public Float calculate(String userId, final DurationInterval interval)
-			throws Throwable {
-		return 0f;
+	public Float calculate(FitbitUser fitbitUser,
+			final DurationInterval interval) throws Throwable {
+		try {
+			Integer monthlyGoal = getMonthlyActivityGoal();
+			Float points = getActivityTotalPoints(fitbitUser.encodedId,
+					interval, monthlyGoal);
+			return points;
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw e;
+		}
 	}
 
 	/**
@@ -42,31 +54,45 @@ public class ActivityGoalCalculationProcess {
 	 * @throws Throwable
 	 */
 	private Float getActivityTotalPoints(String userId,
-			final DurationInterval interval, Integer monthlySleepGoal)
+			final DurationInterval interval, Integer monthlyActivityGoal)
 			throws Throwable {
 		Float results = 0f;
 
 		// Sleep config.
+		List<GoalConfiguration> bpmList = GoalConfiguration
+				.getGoalConfiguration(LilyConstants.GoalConfiguration.BPM);
+
 		List<GoalConfiguration> goalConfigList = GoalConfiguration
-				.getGoalConfiguration(LilyConstants.GoalConfiguration.SLEEP);
+				.getGoalConfiguration(LilyConstants.GoalConfiguration.ACTIVE_MINUTES);
+
 		Date[] dateRange = DateUtils.getDateRange(interval);
 
-		List<SleepLog> sleepLogs = SleepLog.find().filter("userId", userId)
-				.filter("date >=", dateRange[0])
-				.filter("date <=", dateRange[1]).asList();
+		List<HeartActivities> heartActivities = HeartActivities.find()
+				.filter("userId", userId).filter("dateTime >=", dateRange[0])
+				.filter("dateTime <=", dateRange[1]).asList();
 
-		// Calculating results for sleep daily basis.
-		for (SleepLog sl : sleepLogs) {
-			if (sl.summary == null)
-				continue;
+		int days = LilyConstants.ConstantClass.getDays(DurationInterval.WEEKLY);
 
-			Integer sleepValue = sl.summary.totalTimeInBed;
+		List<List<HeartActivities>> partList = Lists.partition(heartActivities,
+				days);	
+		
+		for (List<HeartActivities> heartActList : partList) {
+			int innerResult = 0;
+			
+			for (HeartActivities ha : heartActList) {
+				if (ha.value == null || ha.value.heartRateZones == null
+						|| ha.value.heartRateZones.size() == 0)
+					continue;
+
+				for (CustomHeartRateZone cus : ha.value.heartRateZones)
+					innerResult += (cus.minutes == null ? 0 : cus.minutes);
+			}
+
 			Float percentageValue = GoalConfiguration.getRelatedPercentage(
-					goalConfigList, sleepValue);
+					goalConfigList, innerResult);
 
 			results = results
-					+ ((monthlySleepGoal * (percentageValue / 100)) / LilyConstants.ConstantClass
-							.getDays(interval));
+					+ ((monthlyActivityGoal * (percentageValue / 100)) / days);
 		}
 		return results;
 	}
