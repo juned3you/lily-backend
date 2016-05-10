@@ -87,10 +87,10 @@ public class FitBitActor extends UntypedActor {
 		loadHeartRate(fitbitUser);
 
 		// Friends
-		loadFriends(fitbitUser);
+		//loadFriends(fitbitUser);
 		
 		//Sleeplog
-		loadSleepGoal(fitbitUser);
+		//loadSleepGoal(fitbitUser);
 
 		// updating sync flag.
 		fitbitUser.isSync = true;

@@ -19,12 +19,12 @@ public class SleepGoalCalculationProcess {
 	/**
 	 * Calculate Monthly Sleep Goal.
 	 */
-	public Float calculate(FitbitUser fitbitUser, final DurationInterval interval)
-			throws Throwable {
+	public Float calculate(FitbitUser fitbitUser,
+			final DurationInterval interval) throws Throwable {
 		try {
 			Integer monthlySleepGoal = getMonthlySleepGoal();
-			Float totalSleepPoints = getSleepTotalPoints(fitbitUser.encodedId, interval,
-					monthlySleepGoal);
+			Float totalSleepPoints = getSleepTotalPoints(fitbitUser.encodedId,
+					interval, monthlySleepGoal);
 			return totalSleepPoints;
 		} catch (Throwable t) {
 			t.printStackTrace();
@@ -64,6 +64,7 @@ public class SleepGoalCalculationProcess {
 				.filter("date >=", dateRange[0])
 				.filter("date <=", dateRange[1]).asList();
 
+		int days = LilyConstants.ConstantClass.getDays(interval);
 		// Calculating results for sleep daily basis.
 		for (SleepLog sl : sleepLogs) {
 			if (sl.summary == null)
@@ -74,8 +75,7 @@ public class SleepGoalCalculationProcess {
 					goalConfigList, sleepValue);
 
 			results = results
-					+ ((monthlySleepGoal * (percentageValue / 100)) / LilyConstants.ConstantClass
-							.getDays(interval));
+					+ ((monthlySleepGoal * (percentageValue / 100)) / days);
 		}
 		return results;
 	}

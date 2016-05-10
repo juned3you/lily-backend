@@ -19,12 +19,12 @@ public class StepGoalCalculationProcess {
 	/**
 	 * Calculate Monthly Step Goal.
 	 */
-	public Float calculate(FitbitUser fitbitUser, final DurationInterval interval)
-			throws Throwable {
+	public Float calculate(FitbitUser fitbitUser,
+			final DurationInterval interval) throws Throwable {
 		try {
 			Integer monthlyStepGoal = getMonthlyStepGoal();
-			Float totalStepPoints = getStepTotalPoints(fitbitUser.encodedId, interval,
-					monthlyStepGoal);
+			Float totalStepPoints = getStepTotalPoints(fitbitUser.encodedId,
+					interval, monthlyStepGoal);
 			return totalStepPoints;
 		} catch (Throwable t) {
 			t.printStackTrace();
@@ -60,22 +60,23 @@ public class StepGoalCalculationProcess {
 				.getGoalConfiguration(LilyConstants.GoalConfiguration.STEPS);
 		Date[] dateRange = DateUtils.getDateRange(interval);
 
-		List<DailyActivity> dailyActivities = DailyActivity.find().filter("userId", userId)
-				.filter("date >=", dateRange[0])
+		List<DailyActivity> dailyActivities = DailyActivity.find()
+				.filter("userId", userId).filter("date >=", dateRange[0])
 				.filter("date <=", dateRange[1]).asList();
 
+		int days = LilyConstants.ConstantClass.getDays(interval);
 		// Calculating results for sleep daily basis.
 		for (DailyActivity da : dailyActivities) {
 			if (da.activities == null || da.activities.size() == 0)
 				continue;
 
-			Integer sleepDayValue = da.activities.stream().mapToInt(i -> i.steps).sum();
+			Integer sleepDayValue = da.activities.stream()
+					.mapToInt(i -> i.steps).sum();
 			Float percentageValue = GoalConfiguration.getRelatedPercentage(
 					goalConfigList, sleepDayValue);
-			
+
 			results = results
-					+ ((monthlyStepGoal * (percentageValue / 100)) / LilyConstants.ConstantClass
-							.getDays(interval));			
+					+ ((monthlyStepGoal * (percentageValue / 100)) / days);
 		}
 		return results;
 	}
