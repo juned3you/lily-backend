@@ -1,6 +1,10 @@
 package com.lily.process;
 
-import java.util.ArrayList;
+import java.text.ParseException;
+import java.time.LocalDate;
+import java.time.Month;
+import java.time.Period;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -26,8 +30,8 @@ public class ActivityGoalCalculationProcess {
 			final DurationInterval interval) throws Throwable {
 		try {
 			Integer monthlyGoal = getMonthlyActivityGoal();
-			Float points = getActivityTotalPoints(fitbitUser.encodedId,
-					interval, monthlyGoal);
+			Float points = getActivityTotalPoints(fitbitUser, interval,
+					monthlyGoal);
 			return points;
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -45,6 +49,15 @@ public class ActivityGoalCalculationProcess {
 	}
 
 	/**
+	 * user.active.bpm
+	 * 
+	 * @return
+	 */
+	public Double getUserActiveBPMPercentage() {
+		return ConfigFactory.load().getDouble("user.active.bpm");
+	}
+
+	/**
 	 * Get calculated activity log.
 	 * 
 	 * @param userId
@@ -53,14 +66,22 @@ public class ActivityGoalCalculationProcess {
 	 * @return
 	 * @throws Throwable
 	 */
-	private Float getActivityTotalPoints(String userId,
+	private Float getActivityTotalPoints(FitbitUser fitbitUser,
 			final DurationInterval interval, Integer monthlyActivityGoal)
 			throws Throwable {
-		Float results = 0f;
 
-		// Sleep config.
+		String userId = fitbitUser.encodedId;
+		int userAge = getAge(fitbitUser);
+
+		// BPM config.
 		List<GoalConfiguration> bpmList = GoalConfiguration
 				.getGoalConfiguration(LilyConstants.GoalConfiguration.BPM);
+
+		//BPM Threashold
+		Double bpmThreshold = (GoalConfiguration.getRelatedPercentage(bpmList,
+				userAge) * getUserActiveBPMPercentage()) / 100;
+
+		Float results = 0f;
 
 		List<GoalConfiguration> goalConfigList = GoalConfiguration
 				.getGoalConfiguration(LilyConstants.GoalConfiguration.ACTIVE_MINUTES);
@@ -74,26 +95,42 @@ public class ActivityGoalCalculationProcess {
 		int days = LilyConstants.ConstantClass.getDays(DurationInterval.WEEKLY);
 
 		List<List<HeartActivities>> partList = Lists.partition(heartActivities,
-				days);	
-		
+				days);
+
 		for (List<HeartActivities> heartActList : partList) {
-			int innerResult = 0;
-			
+			int totalMinutes = 0;
+
 			for (HeartActivities ha : heartActList) {
 				if (ha.value == null || ha.value.heartRateZones == null
 						|| ha.value.heartRateZones.size() == 0)
 					continue;
 
 				for (CustomHeartRateZone cus : ha.value.heartRateZones)
-					innerResult += (cus.minutes == null ? 0 : cus.minutes);
+					totalMinutes += (cus.minutes == null ? 0 : cus.minutes);
 			}
 
 			Float percentageValue = GoalConfiguration.getRelatedPercentage(
-					goalConfigList, innerResult);
+					goalConfigList, totalMinutes);
 
-			results = results
-					+ ((monthlyActivityGoal * (percentageValue / 100)) / days);
+			Float innerResults = ((monthlyActivityGoal * (percentageValue / 100)) / days);
+			if (innerResults > bpmThreshold)
+				results = results + innerResults;
 		}
 		return results;
+	}
+
+	private int getAge(FitbitUser fitbitUser) throws ParseException {
+		Date dob = DateUtils.formatDate(fitbitUser.dateOfBirth);
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(dob);
+
+		Month month = Month.of(cal.get(Calendar.MONTH) + 1);
+
+		LocalDate today = LocalDate.now();
+		LocalDate birthday = LocalDate.of(cal.get(Calendar.YEAR), month,
+				cal.get(Calendar.DATE));
+
+		Period p = Period.between(birthday, today);
+		return p.getYears();
 	}
 }
