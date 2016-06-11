@@ -98,6 +98,14 @@ public class UserController extends Controller {
 		final String password = json.findPath("password").textValue();
 		if (password == null)
 			return badRequest("Missing parameter [password]");
+		
+		final String company = json.findPath("company").textValue();
+		if (company == null)
+			return badRequest("Missing parameter [company]");		
+		
+		final String department = json.findPath("department").textValue();
+		if (department == null)
+			return badRequest("Missing parameter [department]");
 
 		EntityManager em = JPA.em();
 
@@ -139,6 +147,8 @@ public class UserController extends Controller {
 			fitbitUser.password = hashedPassword;
 			fitbitUser.createdAt = new Date();
 			fitbitUser.encodedId = userId;
+			fitbitUser.company = company;
+			fitbitUser.department = department;
 			em.persist(fitbitUser);
 			user = fitbitUser;
 			response().cookies().clear();

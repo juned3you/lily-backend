@@ -24,12 +24,12 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 @Inheritance(strategy = InheritanceType.JOINED)
 public class User extends BaseEntity {
 
-	@Id	
+	@Id
 	@Column(name = "id")
-	@GenericGenerator(name="seq_id", strategy= "com.lily.config.RedshiftIdGenerator")
-	@GeneratedValue(generator="seq_id")	
+	@GenericGenerator(name = "seq_id", strategy = "com.lily.config.RedshiftIdGenerator")
+	@GeneratedValue(generator = "seq_id")
 	public Long id;
-	
+
 	public Long getId() {
 		return id;
 	}
@@ -37,7 +37,7 @@ public class User extends BaseEntity {
 	public void setId(Long id) {
 		this.id = id;
 	}
-	
+
 	public User() {
 
 	}
@@ -50,7 +50,7 @@ public class User extends BaseEntity {
 		this.password = password;
 		this.createdAt = createdAt;
 		this.lastModified = lastModified;
-	}	
+	}
 
 	@Column(name = "firstname")
 	public String firstname;
@@ -60,6 +60,12 @@ public class User extends BaseEntity {
 
 	@Column(name = "email")
 	public String email;
+
+	@Column(name = "company")
+	public String company;
+
+	@Column(name = "department")
+	public String department;
 
 	public String getFirstname() {
 		return firstname;
@@ -95,5 +101,5 @@ public class User extends BaseEntity {
 
 	@JsonIgnore
 	@Column(name = "password")
-	public String password;	
+	public String password;
 }
