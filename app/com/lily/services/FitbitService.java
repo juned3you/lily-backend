@@ -311,6 +311,15 @@ public class FitbitService {
 									+ "'"), FitbitUser.class);
 		});
 	}
+	
+	public FitbitUser getFitbitUserByEmail(String email) throws Throwable {
+		return JPA.withTransaction(() -> {
+			return JpaUtils.getSingleResultOrElseNull(
+					JPA.em().createQuery(
+							"FROM FitbitUser where email = '" + email
+									+ "'"), FitbitUser.class);
+		});
+	}
 
 	/**
 	 * Call Fitbit server and get User Profile.

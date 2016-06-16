@@ -98,11 +98,11 @@ public class UserController extends Controller {
 		final String password = json.findPath("password").textValue();
 		if (password == null)
 			return badRequest("Missing parameter [password]");
-		
+
 		final String company = json.findPath("company").textValue();
 		if (company == null)
-			return badRequest("Missing parameter [company]");		
-		
+			return badRequest("Missing parameter [company]");
+
 		final String department = json.findPath("department").textValue();
 		if (department == null)
 			return badRequest("Missing parameter [department]");
@@ -139,7 +139,7 @@ public class UserController extends Controller {
 						+ " is already link with another user !!.");
 
 			// Register new user.
-			FitbitUser fitbitUser = fitbitService.getUserFromServer(userId);		
+			FitbitUser fitbitUser = fitbitService.getUserFromServer(userId);
 
 			fitbitUser.firstname = firstname;
 			fitbitUser.lastname = lastname;
@@ -155,6 +155,62 @@ public class UserController extends Controller {
 		}
 
 		return ok(Json.toJson(user));
+	}
+
+	/**
+	 * Create new user.
+	 * 
+	 * @return
+	 * @throws Throwable
+	 */
+	@BodyParser.Of(play.mvc.BodyParser.Json.class)
+	@Transactional
+	public Result update() throws Throwable {
+		final JsonNode json = request().body().asJson();
+		if (json == null)
+			return badRequest("Expecting Json request");
+
+		final String firstname = json.findPath("firstname").textValue();
+		if (firstname == null)
+			return badRequest("Missing parameter [firstname]");
+
+		final String lastname = json.findPath("lastname").textValue();
+		if (lastname == null)
+			return badRequest("Missing parameter [lastname]");
+
+		final String email = json.findPath("email").textValue();
+		if (email == null)
+			return badRequest("Missing parameter [email]");
+
+		final String password = json.findPath("password").textValue();
+
+		final String company = json.findPath("company").textValue();
+		if (company == null)
+			return badRequest("Missing parameter [company]");
+
+		final String department = json.findPath("department").textValue();
+		if (department == null)
+			return badRequest("Missing parameter [department]");
+
+		EntityManager em = JPA.em();
+
+		FitbitUser fitbitUser = fitbitService.getFitbitUserByEmail(email);
+
+		if (fitbitUser == null)
+			return badRequest("User Id is not registered !!.");
+
+		fitbitUser.firstname = firstname;
+		fitbitUser.lastname = lastname;
+		fitbitUser.email = email;
+
+		if (password != null && password.trim().length() > 0)
+			fitbitUser.password = PasswordHasher.hash(password);
+
+		fitbitUser.company = company;
+		fitbitUser.department = department;
+		em.merge(fitbitUser);
+
+		return ok(Json.toJson(fitbitUser));
 	}
 
 	/**
