@@ -66,6 +66,8 @@ public class User extends BaseEntity {
 
 	@Column(name = "department")
 	public String department;
+	
+	public transient String userId;
 
 	public String getFirstname() {
 		return firstname;

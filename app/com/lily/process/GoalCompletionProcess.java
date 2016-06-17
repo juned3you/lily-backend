@@ -59,14 +59,14 @@ public class GoalCompletionProcess {
 		response.monthlyGoalCompletionPoints = response.sleepPoints
 				+ response.stepPoints + response.activityPoints;
 
-		response.monthlyGrowthPercentage = (response.monthlyGoalCompletionPoints - response.monthlyGoalCompletion) / 100;
+		response.monthlyGrowthPercentage = (response.monthlyGoalCompletionPoints / response.monthlyGoalCompletion) * 100;
 
 		// Getting Multiplying coefficient from Db.
 		List<GoalConfiguration> goalConfigList = GoalConfiguration
 				.getGoalConfiguration(LilyConstants.GoalConfiguration.MONTHLY_GROWTH);
 
-		response.multiplyingCoefficient = GoalConfiguration
-				.getRelatedPercentage(goalConfigList, 0);
+		response.multiplyingCoefficient = Math.round(GoalConfiguration
+				.getRelatedPercentage(goalConfigList, 0) * 100.0) / 100.0;
 
 		response.monthlyGrowth = (response.monthlyGoalCompletionPoints - response.monthlyGoalCompletion)
 				* response.multiplyingCoefficient;

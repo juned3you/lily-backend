@@ -67,6 +67,9 @@ public class UserController extends Controller {
 		if (isValidUser == false)
 			return badRequest("Invalid User !!");
 
+		if(user instanceof FitbitUser )
+			user.userId = ((FitbitUser)user).encodedId;
+		
 		return ok(Json.toJson(user));
 	}
 
@@ -151,6 +154,7 @@ public class UserController extends Controller {
 			fitbitUser.department = department;
 			em.persist(fitbitUser);
 			user = fitbitUser;
+			user.userId = fitbitUser.encodedId;
 			response().cookies().clear();
 		}
 
@@ -208,6 +212,7 @@ public class UserController extends Controller {
 
 		fitbitUser.company = company;
 		fitbitUser.department = department;
+		fitbitUser.userId = fitbitUser.encodedId;
 		em.merge(fitbitUser);
 
 		return ok(Json.toJson(fitbitUser));
@@ -251,6 +256,7 @@ public class UserController extends Controller {
 			fitbitUser.password = user.password;
 			fitbitUser.createdAt = new Date();
 			fitbitUser.encodedId = json.findPath("userId").textValue();
+			fitbitUser.userId = fitbitUser.encodedId;
 			em.remove(user);
 			em.persist(fitbitUser);
 			response().cookies().clear();
