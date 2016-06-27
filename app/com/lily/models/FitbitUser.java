@@ -31,7 +31,10 @@ public class FitbitUser extends User {
 
 	@Column(name = "corporate")
 	public Boolean corporate;
-
+	
+	@Column(name = "corporate_admin")
+	public Boolean corporateAdmin;
+	
 	@Column(name = "country")
 	public String country;
 
