@@ -6,6 +6,7 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 
 import org.apache.commons.beanutils.BeanUtils;
+import org.bson.types.ObjectId;
 
 import play.Logger;
 import play.db.jpa.JPA;
@@ -35,11 +36,15 @@ import com.lily.authorize.fitbit.transformer.SleepTimeSeriesTransformer;
 import com.lily.authorize.fitbit.transformer.WeightLogTransformer;
 import com.lily.extractor.ExtractorRequest;
 import com.lily.extractor.ExtractorResponse;
+import com.lily.http.GoalCompletionResponse;
 import com.lily.models.FitbitUser;
+import com.lily.mongo.models.GoalCompletion;
+import com.lily.process.GoalCompletionProcess;
 import com.lily.services.FitbitService;
 import com.lily.utils.DateUtils;
 import com.lily.utils.EnumActivities;
 import com.lily.utils.EnumSleep;
+import com.lily.utils.LilyConstants.DurationInterval;
 
 /**
  * Akka Fitbit actor.
@@ -88,9 +93,12 @@ public class FitBitActor extends UntypedActor {
 
 		// Friends
 		loadFriends(fitbitUser);
-		
-		//Sleeplog
-		//loadSleepGoal(fitbitUser);
+
+		// Sleeplog
+		// loadSleepGoal(fitbitUser);
+
+		// Calculate Monthly Goal
+		calculateMonthlyGoalCompletion(fitbitUser);
 
 		// updating sync flag.
 		fitbitUser.isSync = true;
@@ -521,6 +529,55 @@ public class FitBitActor extends UntypedActor {
 		} catch (Throwable t) {
 			Logger.error("Error updating SleepGoal for user: "
 					+ fitbitUser.encodedId + "-> " + t.getMessage());
+			t.printStackTrace();
+		}
+	}
+
+	/**
+	 * Calculate Monthly Goal for a user.
+	 * 
+	 * @param fitbitUser
+	 */
+	public static void calculateMonthlyGoalCompletion(FitbitUser fitbitUser) {
+		try {
+			GoalCompletionProcess goalCompletionProcess = GoalCompletionProcess
+					.getInstance();
+
+			GoalCompletionResponse response = goalCompletionProcess
+					.getGoalCompletion(fitbitUser, DurationInterval.MONTHLY);
+
+			Calendar cal = Calendar.getInstance();
+			cal.set(Calendar.DAY_OF_MONTH,
+					cal.getActualMinimum(Calendar.DAY_OF_MONTH));
+			Date startDate = cal.getTime();
+
+			cal.set(Calendar.DAY_OF_MONTH,
+					cal.getActualMaximum(Calendar.DAY_OF_MONTH));
+			Date endDate = cal.getTime();
+
+			GoalCompletion oldGoalCompletion = GoalCompletion
+					.q(GoalCompletion.class).field("date")
+					.greaterThanOrEq(startDate).field("date")
+					.lessThanOrEq(endDate).field("userId")
+					.equal(fitbitUser.encodedId).get();
+
+			if (oldGoalCompletion == null) {
+				oldGoalCompletion = new GoalCompletion();
+				BeanUtils.copyProperties(oldGoalCompletion, response);
+				oldGoalCompletion.userId = fitbitUser.encodedId;
+				oldGoalCompletion.date = new Date();
+				oldGoalCompletion.insert();
+			} else {
+				ObjectId id = oldGoalCompletion.id;
+				String userId = oldGoalCompletion.userId;
+				BeanUtils.copyProperties(oldGoalCompletion, response);
+				oldGoalCompletion.id = id;
+				oldGoalCompletion.userId = userId;
+				oldGoalCompletion.date = new Date();
+				oldGoalCompletion.update();
+			}
+
+		} catch (Throwable t) {
 			t.printStackTrace();
 		}
 	}

@@ -4,15 +4,11 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.bson.types.ObjectId;
 import org.mongodb.morphia.query.Query;
 
 import com.lily.exception.LoaderException;
 import com.lily.loader.Loader;
-import com.lily.mongo.models.Sleep;
-import com.lily.mongo.models.SleepLog;
 import com.lily.mongo.models.SleepTimeSeries;
-import com.lily.mongo.utils.Model;
 
 /**
  * Load model into Mongodb.

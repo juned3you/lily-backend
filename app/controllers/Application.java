@@ -14,9 +14,9 @@ public class Application extends Controller {
 		
     public Result index() throws Throwable {    	
     	FitbitUser fitbitUser = new FitbitService().getFitbitUser("4CMMSH");    	
-    	FitBitActor.loadSleepGoal(fitbitUser);
+    	//FitBitActor.loadSleepGoal(fitbitUser);
     	//new GoalCompletionProcess().getGoalCompletion(user.encodedId, DurationInterval.MONTHLY);
-    	
+    	FitBitActor.calculateMonthlyGoalCompletion(fitbitUser);
         return ok(index.render("Your new application is ready."));
     }
     

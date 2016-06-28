@@ -20,6 +20,18 @@ import com.lily.utils.LilyConstants.DurationInterval;
 @Singleton
 public class GoalCompletionProcess {
 
+	private static GoalCompletionProcess goalCompletionProcess;
+
+	public static GoalCompletionProcess getInstance() {
+		if (goalCompletionProcess != null)
+			return goalCompletionProcess;
+
+		synchronized (GoalCompletionProcess.class) {
+			goalCompletionProcess = new GoalCompletionProcess();
+		}
+		return goalCompletionProcess;
+	}
+
 	@Inject
 	private SleepGoalCalculationProcess sleepProcess;
 
@@ -28,6 +40,17 @@ public class GoalCompletionProcess {
 
 	@Inject
 	private StepGoalCalculationProcess stepGoalCalculationProcess;
+
+	public GoalCompletionProcess() {
+		if (sleepProcess == null)
+			sleepProcess = new SleepGoalCalculationProcess();
+
+		if (activityGoalCalculationProcess == null)
+			activityGoalCalculationProcess = new ActivityGoalCalculationProcess();
+
+		if (stepGoalCalculationProcess == null)
+			stepGoalCalculationProcess = new StepGoalCalculationProcess();
+	}
 
 	/**
 	 * Get Goal completion based on interval.
