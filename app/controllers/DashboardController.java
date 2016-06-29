@@ -6,6 +6,7 @@ import play.libs.Json;
 import play.mvc.Result;
 
 import com.lily.exception.AuthorizationException;
+import com.lily.http.FriendsGoalCompletionResponse;
 import com.lily.models.FitbitUser;
 import com.lily.mongo.models.Friend;
 import com.lily.mongo.models.GoalCompletion;
@@ -68,11 +69,11 @@ public class DashboardController extends BaseController {
 		Friend user = Friend.find().filter("userId", userId)
 				.get();
 		
-		if(user == null)
+		if(user == null || user.users == null || user.users.size() == 0)
 			return badRequest("No Friends found...");
 		
-		GoalCompletion response = goalCompletionProcess
-				.getGoalCompletion(fitbitUser, DurationInterval.MONTHLY);
+		FriendsGoalCompletionResponse response = goalCompletionProcess
+				.getGoalCompletionForFriends(DurationInterval.MONTHLY, user);
 
 		setResponseHeaders();
 		return ok(Json.toJson(response));

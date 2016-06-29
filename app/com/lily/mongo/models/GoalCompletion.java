@@ -27,14 +27,29 @@ public class GoalCompletion extends Model {
 
 	public Integer monthlyGoalCompletion;
 	public Float monthlyGoalCompletionPoints;
-	
+
 	public Double multiplyingCoefficient;
 	public Float monthlyGrowthPercentage;
-	
-	public Double monthlyGrowth;	
+
+	public Double monthlyGrowth;
 
 	public static Model.Finder<ObjectId, GoalCompletion> find() {
 		return new Model.Finder<ObjectId, GoalCompletion>(ObjectId.class,
 				GoalCompletion.class);
+	}
+
+	/**
+	 * Get Goal completion by Range.
+	 * @param userId
+	 * @param startDate
+	 * @param endDate
+	 * @return
+	 */
+	public static GoalCompletion getGoalCompletion(String userId,
+			Date startDate, Date endDate) {
+		GoalCompletion goalCompletion = GoalCompletion.q(GoalCompletion.class)
+				.field("date").greaterThanOrEq(startDate).field("date")
+				.lessThanOrEq(endDate).field("userId").equal(userId).get();
+		return goalCompletion;
 	}
 }

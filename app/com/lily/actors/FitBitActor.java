@@ -554,11 +554,8 @@ public class FitBitActor extends UntypedActor {
 					cal.getActualMaximum(Calendar.DAY_OF_MONTH));
 			Date endDate = cal.getTime();
 
-			GoalCompletion oldGoalCompletion = GoalCompletion
-					.q(GoalCompletion.class).field("date")
-					.greaterThanOrEq(startDate).field("date")
-					.lessThanOrEq(endDate).field("userId")
-					.equal(fitbitUser.encodedId).get();
+			GoalCompletion oldGoalCompletion = GoalCompletion.getGoalCompletion(
+					fitbitUser.encodedId, startDate, endDate);
 
 			if (oldGoalCompletion == null) {
 				oldGoalCompletion = new GoalCompletion();
