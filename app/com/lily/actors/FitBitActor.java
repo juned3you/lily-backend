@@ -36,7 +36,6 @@ import com.lily.authorize.fitbit.transformer.SleepTimeSeriesTransformer;
 import com.lily.authorize.fitbit.transformer.WeightLogTransformer;
 import com.lily.extractor.ExtractorRequest;
 import com.lily.extractor.ExtractorResponse;
-import com.lily.http.GoalCompletionResponse;
 import com.lily.models.FitbitUser;
 import com.lily.mongo.models.GoalCompletion;
 import com.lily.process.GoalCompletionProcess;
@@ -543,8 +542,8 @@ public class FitBitActor extends UntypedActor {
 			GoalCompletionProcess goalCompletionProcess = GoalCompletionProcess
 					.getInstance();
 
-			GoalCompletionResponse response = goalCompletionProcess
-					.getGoalCompletion(fitbitUser, DurationInterval.MONTHLY);
+			GoalCompletion response = goalCompletionProcess
+					.calculateGoalCompletion(fitbitUser, DurationInterval.MONTHLY);
 
 			Calendar cal = Calendar.getInstance();
 			cal.set(Calendar.DAY_OF_MONTH,

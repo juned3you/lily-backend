@@ -16,13 +16,22 @@ public class GoalCompletion extends Model {
 
 	public Date date;
 
+	public Integer sleepGoal;
+	public Float sleepPoints;
+
+	public Integer stepGoal;
+	public Float stepPoints;
+
+	public Integer activityGoal;
+	public Float activityPoints;
+
 	public Integer monthlyGoalCompletion;
 	public Float monthlyGoalCompletionPoints;
-
+	
 	public Double multiplyingCoefficient;
 	public Float monthlyGrowthPercentage;
-
-	public Double monthlyGrowth;
+	
+	public Double monthlyGrowth;	
 
 	public static Model.Finder<ObjectId, GoalCompletion> find() {
 		return new Model.Finder<ObjectId, GoalCompletion>(ObjectId.class,

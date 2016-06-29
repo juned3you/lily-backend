@@ -1,13 +1,15 @@
 package com.lily.process;
 
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.lily.http.GoalCompletionResponse;
 import com.lily.models.FitbitUser;
 import com.lily.models.GoalConfiguration;
+import com.lily.mongo.models.GoalCompletion;
 import com.lily.utils.LilyConstants;
 import com.lily.utils.LilyConstants.DurationInterval;
 
@@ -53,16 +55,49 @@ public class GoalCompletionProcess {
 	}
 
 	/**
+	 * Get Goal completion from Db or calculate and save it.
+	 * 
+	 * @param interval
+	 * @throws Throwable
+	 */
+	public final GoalCompletion getGoalCompletion(FitbitUser fitbitUser,
+			final DurationInterval interval) throws Throwable {
+		Calendar cal = Calendar.getInstance();
+		cal.set(Calendar.DAY_OF_MONTH,
+				cal.getActualMinimum(Calendar.DAY_OF_MONTH));
+		Date startDate = cal.getTime();
+
+		cal.set(Calendar.DAY_OF_MONTH,
+				cal.getActualMaximum(Calendar.DAY_OF_MONTH));
+		Date endDate = cal.getTime();
+
+		//Get from Db.
+		GoalCompletion oldGoalCompletion = GoalCompletion
+				.q(GoalCompletion.class).field("date")
+				.greaterThanOrEq(startDate).field("date")
+				.lessThanOrEq(endDate).field("userId")
+				.equal(fitbitUser.encodedId).get();
+		
+		//Else insert and return it.
+		if (oldGoalCompletion == null){
+			oldGoalCompletion = calculateGoalCompletion(fitbitUser, interval);
+			oldGoalCompletion.userId = fitbitUser.encodedId;
+			oldGoalCompletion.date = new Date();
+			oldGoalCompletion.insert();
+		}
+		return oldGoalCompletion;
+	}
+
+	/**
 	 * Get Goal completion based on interval.
 	 * 
 	 * @param interval
 	 * @throws Throwable
 	 */
-	public final GoalCompletionResponse getGoalCompletion(
-			FitbitUser fitbitUser, final DurationInterval interval)
-			throws Throwable {
+	public final GoalCompletion calculateGoalCompletion(FitbitUser fitbitUser,
+			final DurationInterval interval) throws Throwable {
 
-		final GoalCompletionResponse response = new GoalCompletionResponse();
+		final GoalCompletion response = new GoalCompletion();
 
 		response.sleepGoal = sleepProcess.getMonthlySleepGoal();
 		response.sleepPoints = sleepProcess.calculate(fitbitUser, interval);
