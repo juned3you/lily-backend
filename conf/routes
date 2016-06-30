@@ -29,5 +29,4 @@ GET		/fitbit/user/:userId/*uri					controllers.FitbitController.dynamicRouteWith
 GET		/fitbit/dynamic/:userId/*uri				controllers.FitbitController.dynamicRouteWithoutUser(userId, uri)
 
 #Dashboard endpoints
-GET	    /fitbit/dashboard/:userId/monthlygoalcompletion				controllers.DashboardController.getMonthlyGoalCompletion(userId)
-GET	    /fitbit/dashboard/:userId/friendsmonthlygoalcompletion		controllers.DashboardController.getFriendsMonthlyGoalCompletion(userId)
+GET	    /fitbit/dashboard/:userId/dashboard					controllers.DashboardController.getDashboardData(userId)

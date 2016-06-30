@@ -61,4 +61,11 @@ public interface LilyConstants {
 		public String BPM = "BPM";
 		public String ACTIVE_MINUTES = "ActiveMinutes";
 	}
+	
+	public interface UI {
+		String UP = "up";
+		String DOWN = "down";
+		String COLOR_SUCCESS = "success";
+		String COLOR_DANGER = "danger";
+	}
 }

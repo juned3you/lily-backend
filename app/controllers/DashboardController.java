@@ -6,13 +6,10 @@ import play.libs.Json;
 import play.mvc.Result;
 
 import com.lily.exception.AuthorizationException;
-import com.lily.http.FriendsGoalCompletionResponse;
+import com.lily.http.DashboardResponse;
 import com.lily.models.FitbitUser;
-import com.lily.mongo.models.Friend;
-import com.lily.mongo.models.GoalCompletion;
-import com.lily.process.GoalCompletionProcess;
+import com.lily.services.DashboardService;
 import com.lily.services.FitbitService;
-import com.lily.utils.LilyConstants.DurationInterval;
 
 /**
  * Fitbit controller for Fitbit operations.
@@ -23,19 +20,20 @@ import com.lily.utils.LilyConstants.DurationInterval;
 public class DashboardController extends BaseController {
 
 	@Inject
-	private GoalCompletionProcess goalCompletionProcess;
-
-	@Inject
 	private FitbitService fitbitService;
 
+	@Inject
+	private DashboardService dashboardService;
+
 	/**
-	 * Compose dynamic route
+	 * Get Dashboard data.
 	 * 
 	 * @return
 	 * @throws Throwable
 	 * @throws AuthorizationException
 	 */
-	public Result getMonthlyGoalCompletion(String userId) throws Throwable {
+	public Result getDashboardData(String userId) throws Throwable {
+
 		if (userId == null)
 			return badRequest("No userId found in request !!");
 
@@ -43,40 +41,10 @@ public class DashboardController extends BaseController {
 		if (fitbitUser == null)
 			return badRequest("Fitbit user doesn't exists..");
 
-		GoalCompletion response = goalCompletionProcess
-				.getGoalCompletion(fitbitUser, DurationInterval.MONTHLY);
+		DashboardResponse response = dashboardService
+				.getDashboardData(fitbitUser);
 
 		setResponseHeaders();
 		return ok(Json.toJson(response));
 	}
-	
-	/**
-	 * Compose dynamic route
-	 * 
-	 * @return
-	 * @throws Throwable
-	 * @throws AuthorizationException
-	 */
-	public Result getFriendsMonthlyGoalCompletion(String userId) throws Throwable {
-		
-		if (userId == null)
-			return badRequest("No userId found in request !!");
-
-		FitbitUser fitbitUser = fitbitService.getFitbitUser(userId);
-		if (fitbitUser == null)
-			return badRequest("Fitbit user doesn't exists..");
-
-		Friend user = Friend.find().filter("userId", userId)
-				.get();
-		
-		if(user == null || user.users == null || user.users.size() == 0)
-			return badRequest("No Friends found...");
-		
-		FriendsGoalCompletionResponse response = goalCompletionProcess
-				.getGoalCompletionForFriends(DurationInterval.MONTHLY, user);
-
-		setResponseHeaders();
-		return ok(Json.toJson(response));
-	}
-
 }

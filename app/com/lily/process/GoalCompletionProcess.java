@@ -1,5 +1,6 @@
 package com.lily.process;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -7,7 +8,6 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.lily.http.FriendsGoalCompletionResponse;
 import com.lily.http.FriendsResponse;
 import com.lily.models.FitbitUser;
 import com.lily.models.GoalConfiguration;
@@ -99,7 +99,7 @@ public class GoalCompletionProcess {
 	 * @param interval
 	 * @throws Throwable
 	 */
-	public final FriendsGoalCompletionResponse getGoalCompletionForFriends(
+	public final List<FriendsResponse> getGoalCompletionForFriends(
 			final DurationInterval interval, Friend user) throws Throwable {
 		// Current Month
 		Calendar cal = Calendar.getInstance();
@@ -121,7 +121,7 @@ public class GoalCompletionProcess {
 				cal.getActualMaximum(Calendar.DAY_OF_MONTH));
 		Date previousEndDate = cal.getTime();
 
-		FriendsGoalCompletionResponse response = new FriendsGoalCompletionResponse();
+		List<FriendsResponse> response = new ArrayList<FriendsResponse>();
 
 		for (User fuser : user.users) {
 			FitbitUser fitbitUser = fitbitService
@@ -145,12 +145,32 @@ public class GoalCompletionProcess {
 
 			FriendsResponse userMonthData = new FriendsResponse();
 			userMonthData.userId = fuser.encodedId;
+			userMonthData.userName = fuser.displayName;
+			
+			if(userMonthData.userId.equals(user.userId))
+				userMonthData.userName = "Me";
+
 			userMonthData.monthlyGoalCompletionPoints = currentMonthGoalCompletion.monthlyGoalCompletionPoints;
 			if (previousMonthGoalCompletion != null)
 				userMonthData.raise = currentMonthGoalCompletion.monthlyGoalCompletionPoints
 						- previousMonthGoalCompletion.monthlyGoalCompletionPoints;
+			else
+				userMonthData.raise = currentMonthGoalCompletion.monthlyGoalCompletionPoints;
 
-			response.friendsData.add(userMonthData);
+			if (userMonthData.raise > 0) {
+				userMonthData.spanClass = userMonthData.spanClass
+						+ LilyConstants.UI.COLOR_SUCCESS;
+				userMonthData.liClass = userMonthData.liClass
+						+ LilyConstants.UI.UP;
+			} else if (userMonthData.raise < 0) {
+				userMonthData.raise = userMonthData.raise * -1;
+				userMonthData.spanClass = userMonthData.spanClass
+						+ LilyConstants.UI.COLOR_DANGER;
+				userMonthData.liClass = userMonthData.liClass
+						+ LilyConstants.UI.DOWN;
+			}
+
+			response.add(userMonthData);
 		}
 
 		return response;
