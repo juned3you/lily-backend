@@ -10,7 +10,7 @@ import com.lily.mongo.utils.Model;
 import com.lily.utils.DateUtils;
 
 @Entity
-public class GoalCompletion extends Model {
+public class WeeklyGoalCompletion extends Model {
 	@Id
 	public ObjectId id;
 	public String userId;
@@ -26,17 +26,17 @@ public class GoalCompletion extends Model {
 	public Integer activityGoal;
 	public Float activityPoints;
 
-	public Integer monthlyGoalCompletion;
-	public Float monthlyGoalCompletionPoints;
+	public Integer weeklyGoalCompletion;
+	public Float weeklyGoalCompletionPoints;
 
 	public Double multiplyingCoefficient;
-	public Float monthlyGrowthPercentage;
+	public Float weeklyGrowthPercentage;
 
-	public Double monthlyGrowth;
+	public Double weeklyGrowth;
 
-	public static Model.Finder<ObjectId, GoalCompletion> find() {
-		return new Model.Finder<ObjectId, GoalCompletion>(ObjectId.class,
-				GoalCompletion.class);
+	public static Model.Finder<ObjectId, WeeklyGoalCompletion> find() {
+		return new Model.Finder<ObjectId, WeeklyGoalCompletion>(ObjectId.class,
+				WeeklyGoalCompletion.class);
 	}
 
 	/**
@@ -47,10 +47,10 @@ public class GoalCompletion extends Model {
 	 * @param endDate
 	 * @return
 	 */
-	public static GoalCompletion getGoalCompletion(String userId,
+	public static WeeklyGoalCompletion getGoalCompletion(String userId,
 			Date startDate, Date endDate) {
-		GoalCompletion goalCompletion = GoalCompletion.q(GoalCompletion.class)
-				.field("date")
+		WeeklyGoalCompletion goalCompletion = WeeklyGoalCompletion
+				.q(WeeklyGoalCompletion.class).field("date")
 				.greaterThanOrEq(DateUtils.setStartTime(startDate))
 				.field("date").lessThanOrEq(DateUtils.setEndTime(endDate))
 				.field("userId").equal(userId).get();

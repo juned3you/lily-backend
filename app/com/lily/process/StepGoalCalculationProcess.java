@@ -20,11 +20,15 @@ public class StepGoalCalculationProcess {
 	 * Calculate Monthly Step Goal.
 	 */
 	public Float calculate(FitbitUser fitbitUser,
-			final DurationInterval interval) throws Throwable {
+			final DurationInterval interval, Date currentDate) throws Throwable {
 		try {
 			Integer monthlyStepGoal = getMonthlyStepGoal();
+			if (interval != DurationInterval.MONTHLY)
+				monthlyStepGoal = monthlyStepGoal
+						/ LilyConstants.ConstantClass.getDays(interval);
+			
 			Float totalStepPoints = getStepTotalPoints(fitbitUser.encodedId,
-					interval, monthlyStepGoal);
+					interval, monthlyStepGoal, currentDate);
 			return totalStepPoints;
 		} catch (Throwable t) {
 			t.printStackTrace();
@@ -51,14 +55,14 @@ public class StepGoalCalculationProcess {
 	 * @throws Throwable
 	 */
 	private Float getStepTotalPoints(String userId,
-			final DurationInterval interval, Integer monthlyStepGoal)
-			throws Throwable {
+			final DurationInterval interval, Integer monthlyStepGoal,
+			Date currentDate) throws Throwable {
 		Float results = 0f;
 
 		// Sleep config.
 		List<GoalConfiguration> goalConfigList = GoalConfiguration
 				.getGoalConfiguration(LilyConstants.GoalConfiguration.STEPS);
-		Date[] dateRange = DateUtils.getDateRange(interval);
+		Date[] dateRange = DateUtils.getDateRange(interval, currentDate);
 
 		List<DailyActivity> dailyActivities = DailyActivity.find()
 				.filter("userId", userId).filter("date >=", dateRange[0])

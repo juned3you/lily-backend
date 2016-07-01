@@ -16,7 +16,7 @@ public class Application extends Controller {
     	FitbitUser fitbitUser = new FitbitService().getFitbitUser("4CMMSH");    	
     	//FitBitActor.loadSleepGoal(fitbitUser);
     	//new GoalCompletionProcess().getGoalCompletion(user.encodedId, DurationInterval.MONTHLY);
-    	FitBitActor.calculateMonthlyGoalCompletion(fitbitUser);
+    	FitBitActor.calculateWeeklyGoalCompletion(fitbitUser);
         return ok(index.render("Your new application is ready."));
     }
     

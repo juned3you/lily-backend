@@ -38,6 +38,7 @@ import com.lily.extractor.ExtractorRequest;
 import com.lily.extractor.ExtractorResponse;
 import com.lily.models.FitbitUser;
 import com.lily.mongo.models.GoalCompletion;
+import com.lily.mongo.models.WeeklyGoalCompletion;
 import com.lily.process.GoalCompletionProcess;
 import com.lily.services.FitbitService;
 import com.lily.utils.DateUtils;
@@ -98,6 +99,9 @@ public class FitBitActor extends UntypedActor {
 
 		// Calculate Monthly Goal
 		calculateMonthlyGoalCompletion(fitbitUser);
+
+		// Calculate Weekly Goal
+		calculateWeeklyGoalCompletion(fitbitUser);
 
 		// updating sync flag.
 		fitbitUser.isSync = true;
@@ -543,7 +547,8 @@ public class FitBitActor extends UntypedActor {
 					.getInstance();
 
 			GoalCompletion response = goalCompletionProcess
-					.calculateGoalCompletion(fitbitUser, DurationInterval.MONTHLY);
+					.calculateGoalCompletion(fitbitUser,
+							DurationInterval.MONTHLY, new Date());
 
 			Calendar cal = Calendar.getInstance();
 			cal.set(Calendar.DAY_OF_MONTH,
@@ -554,8 +559,8 @@ public class FitBitActor extends UntypedActor {
 					cal.getActualMaximum(Calendar.DAY_OF_MONTH));
 			Date endDate = cal.getTime();
 
-			GoalCompletion oldGoalCompletion = GoalCompletion.getGoalCompletion(
-					fitbitUser.encodedId, startDate, endDate);
+			GoalCompletion oldGoalCompletion = GoalCompletion
+					.getGoalCompletion(fitbitUser.encodedId, startDate, endDate);
 
 			if (oldGoalCompletion == null) {
 				oldGoalCompletion = new GoalCompletion();
@@ -570,6 +575,53 @@ public class FitBitActor extends UntypedActor {
 				oldGoalCompletion.id = id;
 				oldGoalCompletion.userId = userId;
 				oldGoalCompletion.date = new Date();
+				oldGoalCompletion.update();
+			}
+
+		} catch (Throwable t) {
+			t.printStackTrace();
+		}
+	}
+
+	/**
+	 * Calculate Weekly Goal for a user.
+	 * 
+	 * @param fitbitUser
+	 */
+	public static void calculateWeeklyGoalCompletion(FitbitUser fitbitUser) {
+		try {
+			GoalCompletionProcess goalCompletionProcess = GoalCompletionProcess
+					.getInstance();
+
+			WeeklyGoalCompletion response = goalCompletionProcess
+					.calculateWeeklyGoalCompletion(fitbitUser,
+							DurationInterval.WEEKLY, new Date());
+
+			Calendar cal = Calendar.getInstance();
+			cal.set(Calendar.DAY_OF_WEEK,
+					cal.getActualMinimum(Calendar.DAY_OF_WEEK));
+			Date startDate = cal.getTime();
+
+			cal.set(Calendar.DAY_OF_WEEK,
+					cal.getActualMaximum(Calendar.DAY_OF_WEEK));
+			Date endDate = cal.getTime();
+
+			WeeklyGoalCompletion oldGoalCompletion = WeeklyGoalCompletion
+					.getGoalCompletion(fitbitUser.encodedId, startDate, endDate);
+
+			if (oldGoalCompletion == null) {
+				oldGoalCompletion = new WeeklyGoalCompletion();
+				BeanUtils.copyProperties(oldGoalCompletion, response);
+				oldGoalCompletion.userId = fitbitUser.encodedId;
+				oldGoalCompletion.date = startDate;
+				oldGoalCompletion.insert();
+			} else {
+				ObjectId id = oldGoalCompletion.id;
+				String userId = oldGoalCompletion.userId;
+				BeanUtils.copyProperties(oldGoalCompletion, response);
+				oldGoalCompletion.id = id;
+				oldGoalCompletion.userId = userId;
+				oldGoalCompletion.date = startDate;
 				oldGoalCompletion.update();
 			}
 

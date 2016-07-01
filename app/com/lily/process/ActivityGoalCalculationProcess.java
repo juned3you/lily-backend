@@ -27,11 +27,15 @@ public class ActivityGoalCalculationProcess {
 	 * Calculate Monthly Activity Goal.
 	 */
 	public Float calculate(FitbitUser fitbitUser,
-			final DurationInterval interval) throws Throwable {
+			final DurationInterval interval, Date currentDate) throws Throwable {
 		try {
 			Integer monthlyGoal = getMonthlyActivityGoal();
+			if (interval != DurationInterval.MONTHLY)
+				monthlyGoal = monthlyGoal
+						/ LilyConstants.ConstantClass.getDays(interval);
+
 			Float points = getActivityTotalPoints(fitbitUser, interval,
-					monthlyGoal);
+					monthlyGoal, currentDate);
 			return points;
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -67,8 +71,8 @@ public class ActivityGoalCalculationProcess {
 	 * @throws Throwable
 	 */
 	private Float getActivityTotalPoints(FitbitUser fitbitUser,
-			final DurationInterval interval, Integer monthlyActivityGoal)
-			throws Throwable {
+			final DurationInterval interval, Integer monthlyActivityGoal,
+			Date currentDate) throws Throwable {
 
 		String userId = fitbitUser.encodedId;
 		int userAge = getAge(fitbitUser);
@@ -77,7 +81,7 @@ public class ActivityGoalCalculationProcess {
 		List<GoalConfiguration> bpmList = GoalConfiguration
 				.getGoalConfiguration(LilyConstants.GoalConfiguration.BPM);
 
-		//BPM Threashold
+		// BPM Threashold
 		Double bpmThreshold = (GoalConfiguration.getRelatedPercentage(bpmList,
 				userAge) * getUserActiveBPMPercentage()) / 100;
 
@@ -86,7 +90,7 @@ public class ActivityGoalCalculationProcess {
 		List<GoalConfiguration> goalConfigList = GoalConfiguration
 				.getGoalConfiguration(LilyConstants.GoalConfiguration.ACTIVE_MINUTES);
 
-		Date[] dateRange = DateUtils.getDateRange(interval);
+		Date[] dateRange = DateUtils.getDateRange(interval, currentDate);
 
 		List<HeartActivities> heartActivities = HeartActivities.find()
 				.filter("userId", userId).filter("dateTime >=", dateRange[0])

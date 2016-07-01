@@ -121,6 +121,16 @@ public class DateUtils {
 		cal.set(Calendar.MILLISECOND, 0);
 		return cal.getTime();
 	}
+	
+	public static Date setTime(Date date, int hour, int mins, int secs) {
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(date);
+		cal.set(Calendar.HOUR_OF_DAY, hour);
+		cal.set(Calendar.MINUTE, mins);
+		cal.set(Calendar.SECOND, secs);
+		cal.set(Calendar.MILLISECOND, 0);
+		return cal.getTime();
+	}
 
 	public static Date setEndTime(Date date) {
 		Calendar cal = Calendar.getInstance();
@@ -136,8 +146,8 @@ public class DateUtils {
 	 * 
 	 * @param interval
 	 */
-	public static Date[] getDateRange(DurationInterval interval) {
-		Date today = new Date();
+	public static Date[] getDateRange(DurationInterval interval, Date initialDate) {
+		Date today = initialDate;
 		Calendar gcal = new GregorianCalendar();
 		gcal.setTime(today);
 

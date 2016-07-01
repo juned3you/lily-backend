@@ -12,5 +12,6 @@ import com.lily.mongo.models.GoalCompletion;
 public class DashboardResponse {
 
 	public GoalCompletion monthlyGoalCompletion;
+	public float weeklyGoalCompletionPercentage;
 	public List<FriendsResponse> friendsData = new ArrayList<FriendsResponse>();
 }

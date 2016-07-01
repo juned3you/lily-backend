@@ -14,7 +14,9 @@ import com.lily.models.GoalConfiguration;
 import com.lily.mongo.models.Friend;
 import com.lily.mongo.models.GoalCompletion;
 import com.lily.mongo.models.User;
+import com.lily.mongo.models.WeeklyGoalCompletion;
 import com.lily.services.FitbitService;
+import com.lily.utils.DateUtils;
 import com.lily.utils.LilyConstants;
 import com.lily.utils.LilyConstants.DurationInterval;
 
@@ -85,9 +87,36 @@ public class GoalCompletionProcess {
 
 		// Else insert and return it.
 		if (oldGoalCompletion == null) {
-			oldGoalCompletion = calculateGoalCompletion(fitbitUser, interval);
+			oldGoalCompletion = calculateGoalCompletion(fitbitUser, interval,
+					new Date());
 			oldGoalCompletion.userId = fitbitUser.encodedId;
 			oldGoalCompletion.date = new Date();
+			oldGoalCompletion.insert();
+		}
+		return oldGoalCompletion;
+	}
+
+	/**
+	 * Get Goal completion from Db or calculate and save it.
+	 * 
+	 * @param interval
+	 * @throws Throwable
+	 */
+	public final WeeklyGoalCompletion getWeeklyGoalCompletion(
+			FitbitUser fitbitUser, final DurationInterval interval,
+			Date[] dateRange) throws Throwable {
+
+		// Get from Db.
+		WeeklyGoalCompletion oldGoalCompletion = WeeklyGoalCompletion
+				.getGoalCompletion(fitbitUser.encodedId, dateRange[0],
+						dateRange[1]);
+
+		// Else insert and return it.
+		if (oldGoalCompletion == null) {
+			oldGoalCompletion = calculateWeeklyGoalCompletion(fitbitUser,
+					interval, dateRange[0]);
+			oldGoalCompletion.userId = fitbitUser.encodedId;
+			oldGoalCompletion.date = DateUtils.setTime(dateRange[0], 1, 1, 1);
 			oldGoalCompletion.insert();
 		}
 		return oldGoalCompletion;
@@ -146,8 +175,8 @@ public class GoalCompletionProcess {
 			FriendsResponse userMonthData = new FriendsResponse();
 			userMonthData.userId = fuser.encodedId;
 			userMonthData.userName = fuser.displayName;
-			
-			if(userMonthData.userId.equals(user.userId))
+
+			if (userMonthData.userId.equals(user.userId))
 				userMonthData.userName = "Me";
 
 			userMonthData.monthlyGoalCompletionPoints = currentMonthGoalCompletion.monthlyGoalCompletionPoints;
@@ -183,21 +212,22 @@ public class GoalCompletionProcess {
 	 * @throws Throwable
 	 */
 	public final GoalCompletion calculateGoalCompletion(FitbitUser fitbitUser,
-			final DurationInterval interval) throws Throwable {
+			final DurationInterval interval, Date currentDate) throws Throwable {
 
 		final GoalCompletion response = new GoalCompletion();
 
 		response.sleepGoal = sleepProcess.getMonthlySleepGoal();
-		response.sleepPoints = sleepProcess.calculate(fitbitUser, interval);
+		response.sleepPoints = sleepProcess.calculate(fitbitUser, interval,
+				currentDate);
 
 		response.stepGoal = stepGoalCalculationProcess.getMonthlyStepGoal();
 		response.stepPoints = stepGoalCalculationProcess.calculate(fitbitUser,
-				interval);
+				interval, currentDate);
 
 		response.activityGoal = activityGoalCalculationProcess
 				.getMonthlyActivityGoal();
 		response.activityPoints = activityGoalCalculationProcess.calculate(
-				fitbitUser, interval);
+				fitbitUser, interval, currentDate);
 
 		response.monthlyGoalCompletion = response.sleepGoal + response.stepGoal
 				+ response.activityGoal;
@@ -215,6 +245,54 @@ public class GoalCompletionProcess {
 				.getRelatedPercentage(goalConfigList, 0) * 100.0) / 100.0;
 
 		response.monthlyGrowth = (response.monthlyGoalCompletionPoints - response.monthlyGoalCompletion)
+				* response.multiplyingCoefficient;
+		return response;
+	}
+
+	/**
+	 * Get Goal completion based on interval.
+	 * 
+	 * @param interval
+	 * @throws Throwable
+	 */
+	public final WeeklyGoalCompletion calculateWeeklyGoalCompletion(
+			FitbitUser fitbitUser, final DurationInterval interval,
+			Date currentDate) throws Throwable {
+
+		final WeeklyGoalCompletion response = new WeeklyGoalCompletion();
+
+		response.sleepGoal = sleepProcess.getMonthlySleepGoal()
+				/ LilyConstants.ConstantClass.getDays(interval);
+		response.sleepPoints = sleepProcess.calculate(fitbitUser, interval,
+				currentDate);
+
+		response.stepGoal = stepGoalCalculationProcess.getMonthlyStepGoal()
+				/ LilyConstants.ConstantClass.getDays(interval);
+		response.stepPoints = stepGoalCalculationProcess.calculate(fitbitUser,
+				interval, currentDate);
+
+		response.activityGoal = activityGoalCalculationProcess
+				.getMonthlyActivityGoal()
+				/ LilyConstants.ConstantClass.getDays(interval);
+		response.activityPoints = activityGoalCalculationProcess.calculate(
+				fitbitUser, interval, currentDate);
+
+		response.weeklyGoalCompletion = response.sleepGoal + response.stepGoal
+				+ response.activityGoal;
+
+		response.weeklyGoalCompletionPoints = response.sleepPoints
+				+ response.stepPoints + response.activityPoints;
+
+		response.weeklyGrowthPercentage = (response.weeklyGoalCompletionPoints / response.weeklyGoalCompletion) * 100;
+
+		// Getting Multiplying coefficient from Db.
+		List<GoalConfiguration> goalConfigList = GoalConfiguration
+				.getGoalConfiguration(LilyConstants.GoalConfiguration.MONTHLY_GROWTH);
+
+		response.multiplyingCoefficient = Math.round(GoalConfiguration
+				.getRelatedPercentage(goalConfigList, 0) * 100.0) / 100.0;
+
+		response.weeklyGrowth = (response.weeklyGoalCompletionPoints - response.weeklyGoalCompletion)
 				* response.multiplyingCoefficient;
 		return response;
 	}
