@@ -13,10 +13,10 @@ import views.html.*;
 public class Application extends Controller {
 		
     public Result index() throws Throwable {    	
-    	FitbitUser fitbitUser = new FitbitService().getFitbitUser("4CMMSH");    	
+    	//FitbitUser fitbitUser = new FitbitService().getFitbitUser("4CMMSH");    	
     	//FitBitActor.loadSleepGoal(fitbitUser);
     	//new GoalCompletionProcess().getGoalCompletion(user.encodedId, DurationInterval.MONTHLY);
-    	FitBitActor.calculateWeeklyGoalCompletion(fitbitUser);
+    	//FitBitActor.calculateWeeklyGoalCompletion(fitbitUser);
         return ok(index.render("Your new application is ready."));
     }
     
