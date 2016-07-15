@@ -10,6 +10,7 @@ import javax.inject.Singleton;
 
 import com.lily.http.ChartResponse;
 import com.lily.http.DashboardResponse;
+import com.lily.http.ProgressBarResponse;
 import com.lily.http.Series;
 import com.lily.models.FitbitUser;
 import com.lily.mongo.models.Friend;
@@ -56,6 +57,7 @@ public class DashboardService {
 		// weekly Goal Completion
 		dashboardResponse.weeklyGoalCompletionPercentage = getWeeklyGoalCompletion(fitbitUser);
 		dashboardResponse.chartData = getChartData(fitbitUser);
+		dashboardResponse.progressBarData = getProgressbarData(fitbitUser);
 
 		return dashboardResponse;
 	}
@@ -115,15 +117,44 @@ public class DashboardService {
 
 		Random random = new Random();
 		while (!gcal.getTime().after(endDate)) {
-			chartResponse.xAxisDataLabel.add("" + gcal.getTime().getDate());
-			int sleepHour = random.nextInt(24);
-			sleepSeries.data.add(sleepHour);
-			sportsSeries.data.add(24 - sleepHour);
+			chartResponse.xAxisDataLabel.add("" + gcal.getTime().getDate());			
+			sleepSeries.data.add(random.nextInt(10));
+			sportsSeries.data.add(random.nextInt(4));
 			gcal.add(Calendar.DATE, 1);
 		}
 
 		chartResponse.seriesData.add(sleepSeries);
 		chartResponse.seriesData.add(sportsSeries);
 		return chartResponse;
+	}
+	
+	/**
+	 * Get progress bar data for last 7 days.
+	 * @param fitbitUser
+	 * @return
+	 */
+	private ProgressBarResponse getProgressbarData(final FitbitUser fitbitUser) {
+		final ProgressBarResponse progressBarResponse = new ProgressBarResponse();	
+		progressBarResponse.steps.progressValue = 56.20f;
+		progressBarResponse.steps.pts = 120;
+		progressBarResponse.steps.interval = "steps";
+		progressBarResponse.steps.data = 5678;
+		
+		progressBarResponse.sleep.progressValue = 25.0f;
+		progressBarResponse.sleep.pts = 80;
+		progressBarResponse.sleep.interval = "h";
+		progressBarResponse.sleep.data = 7;
+		
+		progressBarResponse.activities.progressValue = 30.0f;
+		progressBarResponse.activities.pts = 180;
+		progressBarResponse.activities.interval = "mins";
+		progressBarResponse.activities.data = 15;
+		
+		progressBarResponse.activeTime.progressValue = 70.0f;
+		progressBarResponse.activeTime.pts = 35;
+		progressBarResponse.activeTime.interval = "mins";
+		progressBarResponse.activeTime.data = 20;
+		
+		return progressBarResponse;
 	}
 }
