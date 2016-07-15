@@ -121,6 +121,9 @@ public class FitbitUser extends User {
 
 	@Column(name = "is_sync")
 	public Boolean isSync;
+	
+	@Column(name = "clock_time_display_format")
+	public String clockTimeDisplayFormat;
 
 	public Integer getAge() {
 		return age;

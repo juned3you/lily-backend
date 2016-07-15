@@ -16,7 +16,10 @@ import com.lily.models.FitbitUser;
 import com.lily.mongo.models.Friend;
 import com.lily.mongo.models.User;
 import com.lily.mongo.models.WeeklyGoalCompletion;
+import com.lily.process.ActivityGoalCalculationProcess;
 import com.lily.process.GoalCompletionProcess;
+import com.lily.process.SleepGoalCalculationProcess;
+import com.lily.process.StepGoalCalculationProcess;
 import com.lily.utils.DateUtils;
 import com.lily.utils.LilyConstants.DurationInterval;
 
@@ -25,6 +28,15 @@ public class DashboardService {
 
 	@Inject
 	private GoalCompletionProcess goalCompletionProcess;
+
+	@Inject
+	private SleepGoalCalculationProcess sleepProcess;
+
+	@Inject
+	private ActivityGoalCalculationProcess activityGoalCalculationProcess;
+
+	@Inject
+	private StepGoalCalculationProcess stepGoalCalculationProcess;
 
 	/**
 	 * Compose all data for dashboard.
@@ -117,7 +129,7 @@ public class DashboardService {
 
 		Random random = new Random();
 		while (!gcal.getTime().after(endDate)) {
-			chartResponse.xAxisDataLabel.add("" + gcal.getTime().getDate());			
+			chartResponse.xAxisDataLabel.add("" + gcal.getTime().getDate());
 			sleepSeries.data.add(random.nextInt(10));
 			sportsSeries.data.add(random.nextInt(4));
 			gcal.add(Calendar.DATE, 1);
@@ -127,34 +139,60 @@ public class DashboardService {
 		chartResponse.seriesData.add(sportsSeries);
 		return chartResponse;
 	}
-	
+
 	/**
 	 * Get progress bar data for last 7 days.
+	 * 
 	 * @param fitbitUser
 	 * @return
+	 * @throws Throwable
 	 */
-	private ProgressBarResponse getProgressbarData(final FitbitUser fitbitUser) {
-		final ProgressBarResponse progressBarResponse = new ProgressBarResponse();	
-		progressBarResponse.steps.progressValue = 56.20f;
-		progressBarResponse.steps.pts = 120;
-		progressBarResponse.steps.interval = "steps";
-		progressBarResponse.steps.data = 5678;
-		
-		progressBarResponse.sleep.progressValue = 25.0f;
-		progressBarResponse.sleep.pts = 80;
-		progressBarResponse.sleep.interval = "h";
-		progressBarResponse.sleep.data = 7;
-		
-		progressBarResponse.activities.progressValue = 30.0f;
-		progressBarResponse.activities.pts = 180;
-		progressBarResponse.activities.interval = "mins";
-		progressBarResponse.activities.data = 15;
-		
+	private ProgressBarResponse getProgressbarData(final FitbitUser fitbitUser)
+			throws Throwable {
+
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(new Date());
+		Date endDate = cal.getTime();
+
+		cal.add(Calendar.DATE, -7);
+		Date startDate = cal.getTime();
+		Date[] dateRange = new Date[] { startDate, endDate };
+
+		final ProgressBarResponse progressBarResponse = new ProgressBarResponse();
+		/*
+		 * progressBarResponse.steps.progressValue = 56.20f;
+		 * progressBarResponse.steps.pts = 120;
+		 * progressBarResponse.steps.interval = "steps";
+		 * progressBarResponse.steps.data = 5678;
+		 */
+
+		progressBarResponse.steps = stepGoalCalculationProcess
+				.getStepTotalPointsLast7Days(fitbitUser.encodedId, dateRange);
+
+		progressBarResponse.sleep = sleepProcess
+				.getSleepTotalPointsForLast7Days(fitbitUser.encodedId,
+						dateRange);
+		/*
+		 * progressBarResponse.sleep.progressValue = 25.0f;
+		 * progressBarResponse.sleep.pts = 80;
+		 * progressBarResponse.sleep.interval = "h";
+		 * progressBarResponse.sleep.data = 7;
+		 */
+
+		progressBarResponse.activities = activityGoalCalculationProcess
+				.getActivityTotalPointsForLast7Days(fitbitUser, dateRange);
+		/*
+		 * progressBarResponse.activities.progressValue = 30.0f;
+		 * progressBarResponse.activities.pts = 180;
+		 * progressBarResponse.activities.interval = "mins";
+		 * progressBarResponse.activities.data = 15;
+		 */
+
 		progressBarResponse.activeTime.progressValue = 70.0f;
 		progressBarResponse.activeTime.pts = 35;
 		progressBarResponse.activeTime.interval = "mins";
 		progressBarResponse.activeTime.data = 20;
-		
+
 		return progressBarResponse;
 	}
 }

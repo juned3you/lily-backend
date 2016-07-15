@@ -5,6 +5,7 @@ import java.util.List;
 
 import javax.inject.Singleton;
 
+import com.lily.http.Value;
 import com.lily.models.FitbitUser;
 import com.lily.models.GoalConfiguration;
 import com.lily.mongo.models.DailyActivity;
@@ -26,7 +27,7 @@ public class StepGoalCalculationProcess {
 			if (interval != DurationInterval.MONTHLY)
 				monthlyStepGoal = monthlyStepGoal
 						/ LilyConstants.ConstantClass.getDays(interval);
-			
+
 			Float totalStepPoints = getStepTotalPoints(fitbitUser.encodedId,
 					interval, monthlyStepGoal, currentDate);
 			return totalStepPoints;
@@ -74,14 +75,69 @@ public class StepGoalCalculationProcess {
 			if (da.activities == null || da.activities.size() == 0)
 				continue;
 
-			Integer sleepDayValue = da.activities.stream()
+			Integer stepDayValue = da.activities.stream()
 					.mapToInt(i -> i.steps).sum();
 			Float percentageValue = GoalConfiguration.getRelatedPercentage(
-					goalConfigList, sleepDayValue);
+					goalConfigList, stepDayValue);
 
 			results = results
 					+ ((monthlyStepGoal * (percentageValue / 100)) / days);
 		}
+		return results;
+	}
+
+	/**
+	 * Calculate steps for last 7 days.
+	 * 
+	 * @param userId
+	 * @param dateRange
+	 * @return
+	 * @throws Throwable
+	 */
+	public Value getStepTotalPointsLast7Days(String userId, Date[] dateRange)
+			throws Throwable {
+		Value results = new Value();
+		results.interval = "steps";
+		int days = 7;
+
+		Integer monthlyStepGoal = getMonthlyStepGoal() / days;
+
+		// Sleep config.
+		List<GoalConfiguration> goalConfigList = GoalConfiguration
+				.getGoalConfiguration(LilyConstants.GoalConfiguration.STEPS);
+
+		List<DailyActivity> dailyActivities = DailyActivity.find()
+				.filter("userId", userId).filter("date >=", dateRange[0])
+				.filter("date <=", dateRange[1]).asList();
+
+		Integer goal = 0;
+		// Calculating results for sleep daily basis.
+		for (DailyActivity da : dailyActivities) {
+			
+			goal += da.goals.steps;
+			
+			if (da.activities == null || da.activities.size() == 0)
+				continue;
+
+			Integer stepDayValue = da.activities.stream()
+					.mapToInt(i -> i.steps).sum();
+
+			Float percentageValue = GoalConfiguration.getRelatedPercentage(
+					goalConfigList, stepDayValue);
+
+			results.pts = results.pts
+					+ new Float(
+							((monthlyStepGoal * (percentageValue / 100)) / days))
+							.intValue();
+
+			results.data += stepDayValue;			
+		}
+		int res = 0;
+
+		if (goal > 0)
+			res = ((results.data * 100) / goal);
+		results.progressValue = new Integer(res).floatValue();
+
 		return results;
 	}
 }

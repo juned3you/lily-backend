@@ -11,6 +11,7 @@ import java.util.List;
 import javax.inject.Singleton;
 
 import com.google.common.collect.Lists;
+import com.lily.http.Value;
 import com.lily.models.FitbitUser;
 import com.lily.models.GoalConfiguration;
 import com.lily.mongo.models.CustomHeartRateZone;
@@ -136,5 +137,55 @@ public class ActivityGoalCalculationProcess {
 
 		Period p = Period.between(birthday, today);
 		return p.getYears();
+	}
+
+	public Value getActivityTotalPointsForLast7Days(FitbitUser fitbitUser,
+			Date[] dateRange) throws Throwable {
+		Value results = new Value();
+		results.interval = "mins";
+		
+		int days = 7;
+		Integer monthlyActivityGoal = getMonthlyActivityGoal() / days;
+		String userId = fitbitUser.encodedId;
+		int userAge = getAge(fitbitUser);
+
+		// BPM config.
+		List<GoalConfiguration> bpmList = GoalConfiguration
+				.getGoalConfiguration(LilyConstants.GoalConfiguration.BPM);
+
+		// BPM Threashold
+		Double bpmThreshold = (GoalConfiguration.getRelatedPercentage(bpmList,
+				userAge) * getUserActiveBPMPercentage()) / 100;
+
+		List<GoalConfiguration> goalConfigList = GoalConfiguration
+				.getGoalConfiguration(LilyConstants.GoalConfiguration.ACTIVE_MINUTES);
+
+		List<HeartActivities> heartActivities = HeartActivities.find()
+				.filter("userId", userId).filter("dateTime >=", dateRange[0])
+				.filter("dateTime <=", dateRange[1]).asList();
+
+		List<List<HeartActivities>> partList = Lists.partition(heartActivities,
+				days);
+
+		for (List<HeartActivities> heartActList : partList) {
+			int totalMinutes = 0;
+
+			for (HeartActivities ha : heartActList) {
+				if (ha.value == null || ha.value.heartRateZones == null
+						|| ha.value.heartRateZones.size() == 0)
+					continue;
+
+				for (CustomHeartRateZone cus : ha.value.heartRateZones)
+					totalMinutes += (cus.minutes == null ? 0 : cus.minutes);
+			}
+
+			Float percentageValue = GoalConfiguration.getRelatedPercentage(
+					goalConfigList, totalMinutes);
+
+			Float innerResults = ((monthlyActivityGoal * (percentageValue / 100)) / days);
+			if (innerResults > bpmThreshold)
+				results.pts += innerResults.intValue();
+		}
+		return results;
 	}
 }

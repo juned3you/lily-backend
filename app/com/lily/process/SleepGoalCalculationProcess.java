@@ -5,6 +5,7 @@ import java.util.List;
 
 import javax.inject.Singleton;
 
+import com.lily.http.Value;
 import com.lily.models.FitbitUser;
 import com.lily.models.GoalConfiguration;
 import com.lily.mongo.models.SleepLog;
@@ -26,7 +27,7 @@ public class SleepGoalCalculationProcess {
 			if (interval != DurationInterval.MONTHLY)
 				monthlySleepGoal = monthlySleepGoal
 						/ LilyConstants.ConstantClass.getDays(interval);
-			
+
 			Float totalSleepPoints = getSleepTotalPoints(fitbitUser.encodedId,
 					interval, monthlySleepGoal, currentDate);
 			return totalSleepPoints;
@@ -81,6 +82,47 @@ public class SleepGoalCalculationProcess {
 			results = results
 					+ ((monthlySleepGoal * (percentageValue / 100)) / days);
 		}
+		return results;
+	}
+
+	public Value getSleepTotalPointsForLast7Days(String userId, Date[] dateRange)
+			throws Throwable {
+		Value results = new Value();
+		results.interval = "h";
+		int days = 7;
+		Integer monthlySleepGoal = getMonthlySleepGoal() / days;
+
+		// Sleep config.
+		List<GoalConfiguration> goalConfigList = GoalConfiguration
+				.getGoalConfiguration(LilyConstants.GoalConfiguration.SLEEP);
+
+		List<SleepLog> sleepLogs = SleepLog.find().filter("userId", userId)
+				.filter("date >=", dateRange[0])
+				.filter("date <=", dateRange[1]).asList();
+
+		// Calculating results for sleep daily basis.
+		for (SleepLog sl : sleepLogs) {
+			if (sl.summary == null)
+				continue;
+
+			Integer sleepValue = sl.summary.totalTimeInBed;
+			Float percentageValue = GoalConfiguration.getRelatedPercentage(
+					goalConfigList, sleepValue);
+
+			results.pts = results.pts
+					+ new Float(
+							((monthlySleepGoal * (percentageValue / 100)) / days))
+							.intValue();
+
+			results.data += sleepValue;
+		}
+
+		if (results.data > 0) {
+			results.data = results.data / 60;
+			results.progressValue = new Integer(results.data / (days * 8))
+					.floatValue();
+		}
+
 		return results;
 	}
 }
