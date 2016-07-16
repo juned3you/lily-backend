@@ -100,7 +100,7 @@ public class StepGoalCalculationProcess {
 		results.interval = "steps";
 		int days = 7;
 
-		Integer monthlyStepGoal = getMonthlyStepGoal() / days;
+		Integer monthlyStepGoal = getMonthlyStepGoal();
 
 		// Sleep config.
 		List<GoalConfiguration> goalConfigList = GoalConfiguration

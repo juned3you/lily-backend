@@ -15,6 +15,7 @@ import com.lily.http.Value;
 import com.lily.models.FitbitUser;
 import com.lily.models.GoalConfiguration;
 import com.lily.mongo.models.CustomHeartRateZone;
+import com.lily.mongo.models.DailyActivity;
 import com.lily.mongo.models.HeartActivities;
 import com.lily.utils.DateUtils;
 import com.lily.utils.LilyConstants;
@@ -139,13 +140,20 @@ public class ActivityGoalCalculationProcess {
 		return p.getYears();
 	}
 
+	/**
+	 * Activities in Last 7 days
+	 * @param fitbitUser
+	 * @param dateRange
+	 * @return
+	 * @throws Throwable
+	 */
 	public Value getActivityTotalPointsForLast7Days(FitbitUser fitbitUser,
 			Date[] dateRange) throws Throwable {
 		Value results = new Value();
 		results.interval = "mins";
-		
+
 		int days = 7;
-		Integer monthlyActivityGoal = getMonthlyActivityGoal() / days;
+		Integer monthlyActivityGoal = getMonthlyActivityGoal() ;
 		String userId = fitbitUser.encodedId;
 		int userAge = getAge(fitbitUser);
 
@@ -167,6 +175,7 @@ public class ActivityGoalCalculationProcess {
 		List<List<HeartActivities>> partList = Lists.partition(heartActivities,
 				days);
 
+		Integer totalMins = 0;
 		for (List<HeartActivities> heartActList : partList) {
 			int totalMinutes = 0;
 
@@ -179,6 +188,7 @@ public class ActivityGoalCalculationProcess {
 					totalMinutes += (cus.minutes == null ? 0 : cus.minutes);
 			}
 
+			totalMins += totalMinutes;
 			Float percentageValue = GoalConfiguration.getRelatedPercentage(
 					goalConfigList, totalMinutes);
 
@@ -186,6 +196,64 @@ public class ActivityGoalCalculationProcess {
 			if (innerResults > bpmThreshold)
 				results.pts += innerResults.intValue();
 		}
+
+		results.data = totalMins;
+		int totalMinsInWeek = (days * 24 * 60) - (days * 8 * 60); // less sleep
+																	// 8 hours
+		if (totalMins > 0)
+			results.progressValue = new Integer((results.data * 100)
+					/ totalMinsInWeek).floatValue();
+		return results;
+	}
+
+	/**
+	 * Active minutes in Last 7 days
+	 * @param userId
+	 * @param dateRange
+	 * @return
+	 * @throws Throwable
+	 */
+	public Value getActiveMinutesTotalPointsLast7Days(String userId,
+			Date[] dateRange) throws Throwable {
+		Value results = new Value();
+		results.interval = "mins";
+		int days = 7;
+
+		Integer monthlyStepGoal = getMonthlyActivityGoal();
+
+		// Active Minutes.
+		List<GoalConfiguration> goalConfigList = GoalConfiguration
+				.getGoalConfiguration(LilyConstants.GoalConfiguration.ACTIVE_MINUTES);
+
+		List<DailyActivity> dailyActivities = DailyActivity.find()
+				.filter("userId", userId).filter("date >=", dateRange[0])
+				.filter("date <=", dateRange[1]).asList();
+
+		// Calculating results
+		for (DailyActivity da : dailyActivities) {
+
+			if (da.summary == null)
+				continue;
+
+			Integer activeMinutes = da.summary.fairlyActiveMinutes
+					+ da.summary.lightlyActiveMinutes
+					+ da.summary.veryActiveMinutes;
+
+			Float percentageValue = GoalConfiguration.getRelatedPercentage(
+					goalConfigList, activeMinutes);
+
+			results.pts = results.pts
+					+ new Float(
+							((monthlyStepGoal * (percentageValue / 100)) / days))
+							.intValue();
+
+			results.data += activeMinutes;
+		}
+		
+		int totalMinsInWeek = (days * 24 * 60) - (days * 8 * 60); // less sleep
+		int	res = (results.data * 100) / totalMinsInWeek;
+		results.progressValue = new Integer(res).floatValue();
+
 		return results;
 	}
 }

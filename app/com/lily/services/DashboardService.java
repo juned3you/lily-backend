@@ -188,10 +188,14 @@ public class DashboardService {
 		 * progressBarResponse.activities.data = 15;
 		 */
 
-		progressBarResponse.activeTime.progressValue = 70.0f;
+		
+		progressBarResponse.activeTime = activityGoalCalculationProcess
+				.getActiveMinutesTotalPointsLast7Days(fitbitUser.encodedId, dateRange);
+		
+		/*progressBarResponse.activeTime.progressValue = 70.0f;
 		progressBarResponse.activeTime.pts = 35;
 		progressBarResponse.activeTime.interval = "mins";
-		progressBarResponse.activeTime.data = 20;
+		progressBarResponse.activeTime.data = 20;*/
 
 		return progressBarResponse;
 	}

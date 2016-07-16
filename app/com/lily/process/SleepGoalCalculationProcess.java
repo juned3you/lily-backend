@@ -75,7 +75,7 @@ public class SleepGoalCalculationProcess {
 			if (sl.summary == null)
 				continue;
 
-			Integer sleepValue = sl.summary.totalTimeInBed;
+			Integer sleepValue = convertToHour(sl.summary.totalTimeInBed);
 			Float percentageValue = GoalConfiguration.getRelatedPercentage(
 					goalConfigList, sleepValue);
 
@@ -85,12 +85,20 @@ public class SleepGoalCalculationProcess {
 		return results;
 	}
 
+	/**
+	 * Get sleep for progress bar.
+	 * 
+	 * @param userId
+	 * @param dateRange
+	 * @return
+	 * @throws Throwable
+	 */
 	public Value getSleepTotalPointsForLast7Days(String userId, Date[] dateRange)
 			throws Throwable {
 		Value results = new Value();
 		results.interval = "h";
 		int days = 7;
-		Integer monthlySleepGoal = getMonthlySleepGoal() / days;
+		Integer monthlySleepGoal = getMonthlySleepGoal();
 
 		// Sleep config.
 		List<GoalConfiguration> goalConfigList = GoalConfiguration
@@ -105,7 +113,7 @@ public class SleepGoalCalculationProcess {
 			if (sl.summary == null)
 				continue;
 
-			Integer sleepValue = sl.summary.totalTimeInBed;
+			Integer sleepValue = convertToHour(sl.summary.totalTimeInBed);
 			Float percentageValue = GoalConfiguration.getRelatedPercentage(
 					goalConfigList, sleepValue);
 
@@ -119,10 +127,14 @@ public class SleepGoalCalculationProcess {
 
 		if (results.data > 0) {
 			results.data = results.data / 60;
-			results.progressValue = new Integer(results.data / (days * 8))
-					.floatValue();
+			results.progressValue = new Integer((results.data * 100)
+					/ (days * 8)).floatValue();
 		}
 
 		return results;
+	}
+
+	private Integer convertToHour(Integer mins) {
+		return mins / 60;
 	}
 }
