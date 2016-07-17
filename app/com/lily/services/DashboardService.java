@@ -1,9 +1,10 @@
 package com.lily.services;
 
+import java.text.ParseException;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
-import java.util.Random;
+import java.util.List;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -13,7 +14,9 @@ import com.lily.http.DashboardResponse;
 import com.lily.http.ProgressBarResponse;
 import com.lily.http.Series;
 import com.lily.models.FitbitUser;
+import com.lily.mongo.models.DailyActivity;
 import com.lily.mongo.models.Friend;
+import com.lily.mongo.models.SleepLog;
 import com.lily.mongo.models.User;
 import com.lily.mongo.models.WeeklyGoalCompletion;
 import com.lily.process.ActivityGoalCalculationProcess;
@@ -106,15 +109,16 @@ public class DashboardService {
 		return diff;
 	}
 
-	private ChartResponse getChartData(final FitbitUser fitbitUser) {
+	private ChartResponse getChartData(final FitbitUser fitbitUser)
+			throws ParseException {
 		final ChartResponse chartResponse = new ChartResponse();
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(new Date());
 		cal.add(Calendar.DATE, -1);
-		Date endDate = cal.getTime();
+		Date endDate = DateUtils.setEndTime(cal.getTime());
 
 		cal.add(Calendar.DATE, -30);
-		Date startDate = cal.getTime();
+		Date startDate = DateUtils.setStartTime(cal.getTime());
 
 		GregorianCalendar gcal = new GregorianCalendar();
 		gcal.setTime(startDate);
@@ -127,17 +131,75 @@ public class DashboardService {
 		sportsSeries.name = "Sport";
 		chartResponse.legends.add(sportsSeries.name);
 
-		Random random = new Random();
+		List<SleepLog> sleepLogs = SleepLog.find()
+				.filter("userId", fitbitUser.encodedId)
+				.filter("date >=", startDate).filter("date <=", endDate)
+				.asList();
+
+		List<DailyActivity> dailyActivities = DailyActivity.find()
+				.filter("userId", fitbitUser.encodedId)
+				.filter("date >=", startDate).filter("date <=", endDate)
+				.asList();
+
 		while (!gcal.getTime().after(endDate)) {
-			chartResponse.xAxisDataLabel.add("" + gcal.getTime().getDate());
-			sleepSeries.data.add(random.nextInt(10));
-			sportsSeries.data.add(random.nextInt(4));
+			Date filterDate = gcal.getTime();
+			chartResponse.xAxisDataLabel.add("" + filterDate.getDate());
+			SleepLog sleepLog = filterSleepLog(sleepLogs, filterDate);
+			int sleepData = 0;
+			if (sleepLog != null)
+				sleepData = sleepLog.summary.totalTimeInBed;
+
+			sleepSeries.data.add(sleepData);
+			
+			DailyActivity dailyAct = filterDailyActivity(dailyActivities, filterDate);
+			int sportData = 0;
+			if (dailyAct != null)
+				sportData = dailyAct.summary.steps;
+			
+			sportsSeries.data.add(sportData);
 			gcal.add(Calendar.DATE, 1);
 		}
 
 		chartResponse.seriesData.add(sleepSeries);
 		chartResponse.seriesData.add(sportsSeries);
 		return chartResponse;
+	}
+
+	/**
+	 * Filter List by date
+	 * @param sleepLogs
+	 * @param filterDate
+	 * @return
+	 * @throws ParseException
+	 */
+	private SleepLog filterSleepLog(List<SleepLog> sleepLogs, Date filterDate)
+			throws ParseException {
+		String date = DateUtils.formatDate(filterDate);
+		for (SleepLog sleepLog : sleepLogs) {
+			String sleepDate = DateUtils.formatDate(sleepLog.date);
+			if (date.equals(sleepDate))
+				return sleepLog;
+		}
+		return null;
+	}
+
+	/**
+	 * Filter List by date
+	 * @param dailyActivities
+	 * @param filterDate
+	 * @return
+	 * @throws ParseException
+	 */
+	private DailyActivity filterDailyActivity(
+			List<DailyActivity> dailyActivities, Date filterDate)
+			throws ParseException {
+		String date = DateUtils.formatDate(filterDate);
+		for (DailyActivity dailyAct : dailyActivities) {
+			String actDate = DateUtils.formatDate(dailyAct.date);
+			if (date.equals(actDate))
+				return dailyAct;
+		}
+		return null;
 	}
 
 	/**
@@ -188,14 +250,16 @@ public class DashboardService {
 		 * progressBarResponse.activities.data = 15;
 		 */
 
-		
 		progressBarResponse.activeTime = activityGoalCalculationProcess
-				.getActiveMinutesTotalPointsLast7Days(fitbitUser.encodedId, dateRange);
-		
-		/*progressBarResponse.activeTime.progressValue = 70.0f;
-		progressBarResponse.activeTime.pts = 35;
-		progressBarResponse.activeTime.interval = "mins";
-		progressBarResponse.activeTime.data = 20;*/
+				.getActiveMinutesTotalPointsLast7Days(fitbitUser.encodedId,
+						dateRange);
+
+		/*
+		 * progressBarResponse.activeTime.progressValue = 70.0f;
+		 * progressBarResponse.activeTime.pts = 35;
+		 * progressBarResponse.activeTime.interval = "mins";
+		 * progressBarResponse.activeTime.data = 20;
+		 */
 
 		return progressBarResponse;
 	}
