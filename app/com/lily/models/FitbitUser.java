@@ -6,6 +6,7 @@ import javax.persistence.PrimaryKeyJoinColumn;
 import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
  * Fitbit user definition from Json.
@@ -15,6 +16,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 @Entity
 @Table(name = "fitbituser")
 @PrimaryKeyJoinColumn(name = "user_id")
+@JsonIgnoreProperties(ignoreUnknown = true )
 public class FitbitUser extends User {
 
 	@Column(name = "age")
