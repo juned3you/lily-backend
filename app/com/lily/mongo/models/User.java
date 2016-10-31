@@ -5,9 +5,11 @@ import org.mongodb.morphia.annotations.Entity;
 import org.mongodb.morphia.annotations.Id;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.lily.mongo.utils.Model;
 
 @Entity
+@JsonIgnoreProperties(ignoreUnknown = true )
 public class User extends Model {
 
 	@Id
